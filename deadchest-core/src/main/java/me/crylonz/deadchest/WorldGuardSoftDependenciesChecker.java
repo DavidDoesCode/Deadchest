@@ -11,6 +11,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import me.crylonz.deadchest.utils.ConfigKey;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import static me.crylonz.deadchest.DeadChest.config;
@@ -67,26 +68,30 @@ public class WorldGuardSoftDependenciesChecker {
                     Boolean ownerFlag = pr.getFlag(DEADCHEST_OWNER_FLAG);
                     Boolean memberFlag = pr.getFlag(DEADCHEST_MEMBER_FLAG);
                     Boolean guestFlag = pr.getFlag(DEADCHEST_GUEST_FLAG);
-                    if (ownerFlag != null && ownerFlag) {
-                        if (pr.getOwners().contains(p.getUniqueId()) || p.isOp()) {
-                            return true;
+
+                    Boolean chestPermission = true;
+                    if (ownerFlag != null && !ownerFlag) {
+                        if (pr.getOwners().contains(p.getUniqueId())) {
+                            chestPermission = false;
                         }
-                    } else if (memberFlag != null && memberFlag) {
-                        if (pr.getMembers().contains(p.getUniqueId()) || p.isOp()) {
-                            return true;
+                    } else if (memberFlag != null && !memberFlag) {
+                        if (pr.getMembers().contains(p.getUniqueId())) {
+                            chestPermission = false;
                         }
-                    } else if (guestFlag != null && guestFlag) {
-                        return true;
-                    } else {
-                        return p.isOp();
+                    } else if (guestFlag != null && !guestFlag) {
+                        chestPermission = false;
                     }
 
-                    generateLog("Player [" + p.getName() + "] died without [ Worldguard] region permission : No Deadchest generated");
-                    return false;
+                    if(!chestPermission) {
+                        generateLog("Player [" + p.getName() + "] died without [ Worldguard] region permission : No Deadchest generated");
+                        return false;
+                    }
+
                 }
             }
             return true;
         } catch (NoClassDefFoundError e) {
+            Bukkit.getLogger().info(e.getMessage());
             return true;
         }
     }
