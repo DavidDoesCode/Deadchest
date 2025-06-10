@@ -65,6 +65,8 @@ public class WorldGuardSoftDependenciesChecker {
                         }
                     }
 
+                    generateLog("Player [" + p.getName() + "] died in region " + pr.getId());
+
                     Boolean ownerFlag = pr.getFlag(DEADCHEST_OWNER_FLAG);
                     Boolean memberFlag = pr.getFlag(DEADCHEST_MEMBER_FLAG);
                     Boolean guestFlag = pr.getFlag(DEADCHEST_GUEST_FLAG);
@@ -74,11 +76,13 @@ public class WorldGuardSoftDependenciesChecker {
                         if (pr.getOwners().contains(p.getUniqueId())) {
                             chestPermission = false;
                         }
-                    } else if (memberFlag != null && !memberFlag) {
+                    }
+                    if (memberFlag != null && !memberFlag) {
                         if (pr.getMembers().contains(p.getUniqueId())) {
                             chestPermission = false;
                         }
-                    } else if (guestFlag != null && !guestFlag) {
+                    }
+                    if (guestFlag != null && !guestFlag) {
                         chestPermission = false;
                     }
 
