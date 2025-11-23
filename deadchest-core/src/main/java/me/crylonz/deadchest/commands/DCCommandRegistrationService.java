@@ -1,8 +1,9 @@
 package me.crylonz.deadchest.commands;
 
 import me.crylonz.deadchest.ChestData;
-import me.crylonz.deadchest.DeadChest;
+import me.crylonz.deadchest.DeadChestLoader;
 import me.crylonz.deadchest.Permission;
+import me.crylonz.deadchest.db.ChestDataRepository;
 import me.crylonz.deadchest.utils.ConfigKey;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,29 +15,28 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.UUID;
 
-import static me.crylonz.deadchest.DeadChest.*;
+import static me.crylonz.deadchest.DeadChestLoader.*;
 import static me.crylonz.deadchest.DeadChestManager.cleanAllDeadChests;
+import static me.crylonz.deadchest.db.IgnoreItemListRepository.loadIgnoreIntoInventory;
 
 public class DCCommandRegistrationService extends DCCommandRegistration {
 
-    public DCCommandRegistrationService(DeadChest plugin) {
+    public DCCommandRegistrationService(DeadChestLoader plugin) {
         super(plugin);
     }
 
     public void registerReload() {
         registerCommand("dc reload", Permission.ADMIN.label, () -> {
-            fileManager.reloadChestDataConfig();
             fileManager.reloadLocalizationConfig();
-            plugin.reloadConfig();
+            chestDataList = ChestDataRepository.findAll();
+            loadIgnoreIntoInventory(ignoreList);
+            DeadChestLoader.plugin.reloadConfig();
             plugin.registerConfig();
-
-            @SuppressWarnings("unchecked")
-            ArrayList<ChestData> tmp = (ArrayList<ChestData>) fileManager.getChestDataConfig().get("chestData");
-            if (tmp != null) {
-                chestData = (List<ChestData>) fileManager.getChestDataConfig().get("chestData");
-            }
             local.set(fileManager.getLocalizationConfig().getConfigurationSection("localisation").getValues(true));
 
             sender.sendMessage(ChatColor.GREEN + local.get("loc_prefix") + " Plugin reload successfully");
@@ -88,8 +88,8 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
         registerCommand("dc removeinfinite", Permission.ADMIN.label, () -> {
 
             int cpt = 0;
-            if (chestData != null && !chestData.isEmpty()) {
-                Iterator<ChestData> chestDataIt = chestData.iterator();
+            if (chestDataList != null && !chestDataList.isEmpty()) {
+                Iterator<ChestData> chestDataIt = chestDataList.iterator();
                 while (chestDataIt.hasNext()) {
                     ChestData chestData = chestDataIt.next();
 
@@ -110,7 +110,7 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
                         }
                     }
                 }
-                fileManager.saveModification();
+                ChestDataRepository.saveAllAsync(chestDataList);
             }
             sender.sendMessage(local.get("loc_prefix") + ChatColor.GOLD + "Operation complete. [" +
                     ChatColor.GREEN + cpt + ChatColor.GOLD + "] deadchest(s) removed");
@@ -143,9 +143,9 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
 
     private void removeAllDeadChestOfPlayer(String playerName) {
         int cpt = 0;
-        if (chestData != null && !chestData.isEmpty()) {
+        if (chestDataList != null && !chestDataList.isEmpty()) {
 
-            Iterator<ChestData> chestDataIt = chestData.iterator();
+            Iterator<ChestData> chestDataIt = chestDataList.iterator();
             while (chestDataIt.hasNext()) {
 
                 ChestData cd = chestDataIt.next();
@@ -167,7 +167,7 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
                     }
                 }
             }
-            fileManager.saveModification();
+            ChestDataRepository.saveAllAsync(chestDataList);
         }
         sender.sendMessage(local.get("loc_prefix") + ChatColor.GOLD + "Operation complete. [" +
                 ChatColor.GREEN + cpt + ChatColor.GOLD + "] deadchest(s) removed of player " + playerName);
@@ -178,9 +178,9 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
             if (player != null) {
                 if (player.hasPermission(Permission.LIST_OWN.label) || !config.getBoolean(ConfigKey.REQUIRE_PERMISSION_TO_LIST_OWN)) {
                     Date now = new Date();
-                    if (!chestData.isEmpty()) {
+                    if (!chestDataList.isEmpty()) {
                         sender.sendMessage(local.get("loc_prefix") + local.get("loc_dclistown") + " :");
-                        for (ChestData data : chestData) {
+                        for (ChestData data : chestDataList) {
                             if (data.getPlayerUUID().equalsIgnoreCase(player.getUniqueId().toString())) {
                                 displayChestData(now, data);
                             }
@@ -201,9 +201,9 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
 
             Date now = new Date();
             if (args[1].equalsIgnoreCase("all")) {
-                if (!chestData.isEmpty()) {
+                if (!chestDataList.isEmpty()) {
                     sender.sendMessage(local.get("loc_prefix") + local.get("loc_dclistall") + ":");
-                    for (ChestData data : chestData) {
+                    for (ChestData data : chestDataList) {
                         displayChestData(now, data);
                     }
                 } else {
@@ -211,9 +211,9 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
                 }
 
             } else {
-                if (!chestData.isEmpty()) {
+                if (!chestDataList.isEmpty()) {
                     sender.sendMessage(local.get("loc_prefix") + ChatColor.GREEN + args[1] + " deadchests :");
-                    for (ChestData data : chestData) {
+                    for (ChestData data : chestDataList) {
                         if (data.getPlayerName().equalsIgnoreCase(args[1])) {
                             displayChestData(now, data);
                         }
@@ -254,7 +254,7 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
     public void registerGiveBack() {
         registerCommand("dc giveback {0}", Permission.GIVEBACK.label, () -> {
             Player targetPlayer = null;
-            for (ChestData data : chestData) {
+            for (ChestData data : chestDataList) {
                 if (data.getPlayerName().equalsIgnoreCase(args[1])) {
 
                     targetPlayer = Bukkit.getPlayer(UUID.fromString(data.getPlayerUUID()));
@@ -269,7 +269,7 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
                         // Remove chest and hologram
                         targetPlayer.getWorld().getBlockAt(data.getChestLocation()).setType(Material.AIR);
                         data.removeArmorStand();
-                        chestData.remove(data);
+                        chestDataList.remove(data);
                     }
                     break;
                 }
@@ -280,6 +280,12 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
             } else {
                 sender.sendMessage(local.get("loc_prefix") + local.get("loc_givebackInfo"));
             }
+        });
+    }
+
+    public void registerIgnoreList() {
+        registerCommand("dc ignore ", Permission.ADMIN.label, () -> {
+            player.openInventory(ignoreList);
         });
     }
 }

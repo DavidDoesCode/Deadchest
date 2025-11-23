@@ -1,20 +1,20 @@
 package me.crylonz.deadchest.commands;
 
-import me.crylonz.deadchest.DeadChest;
+import me.crylonz.deadchest.DeadChestLoader;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import static me.crylonz.deadchest.DeadChest.local;
+import static me.crylonz.deadchest.DeadChestLoader.local;
 
 public class DCCommandExecutor implements CommandExecutor {
 
-    private final DeadChest plugin;
+    private final DeadChestLoader plugin;
     private final DCCommandRegistrationService commandRegistration;
 
-    public DCCommandExecutor(DeadChest p) {
-        this.plugin = p;
+    public DCCommandExecutor(DeadChestLoader deadChestLoader) {
+        this.plugin = deadChestLoader;
         this.commandRegistration = new DCCommandRegistrationService(plugin);
     }
 
@@ -34,6 +34,7 @@ public class DCCommandExecutor implements CommandExecutor {
         commandRegistration.registerListOwn();          // dc list
         commandRegistration.registerListOther();        // dc list all | <PlayerName>
         commandRegistration.registerGiveBack();         // dc giveback <PlayerName>
+        commandRegistration.registerIgnoreList();       // dc ignore
 
         if (!commandRegistration.isCommandSucceed()) {
             sender.sendMessage(local.get("loc_prefix") + ChatColor.RED + "Unrecognized Command");

@@ -1,7 +1,7 @@
 package me.crylonz.deadchest.commands;
 
 import me.crylonz.deadchest.Permission;
-import me.crylonz.deadchest.PermissionUtils;
+import me.crylonz.deadchest.utils.PermissionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -29,6 +29,7 @@ public class DCTabCompletion implements TabCompleter {
                         list.add("removeinfinite");
                         list.add("removeall");
                         list.add("repair");
+                        list.add("ignore");
                     }
 
                     if (PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.LIST_ALL)) {
