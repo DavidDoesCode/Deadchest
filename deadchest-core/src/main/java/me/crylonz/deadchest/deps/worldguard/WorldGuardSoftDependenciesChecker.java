@@ -2,7 +2,9 @@ package me.crylonz.deadchest.deps.worldguard;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.BooleanFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
@@ -62,28 +64,34 @@ public class WorldGuardSoftDependenciesChecker {
 
                 if (set.size() != 0) {
 
-                    // retrieve the highest priority
-                    ProtectedRegion pr = set.getRegions().iterator().next();
-                    for (ProtectedRegion pRegion : set.getRegions()) {
-                        if (pRegion.getPriority() > pr.getPriority()) {
-                            pr = pRegion;
+                    // Wrap player for WorldGuard API
+                    LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(p);
+
+                    // Use queryValue to get flag values respecting region priorities and inheritance
+                    Boolean ownerFlag = set.queryValue(localPlayer, DEADCHEST_OWNER_FLAG);
+                    Boolean memberFlag = set.queryValue(localPlayer, DEADCHEST_MEMBER_FLAG);
+                    Boolean guestFlag = set.queryValue(localPlayer, DEADCHEST_GUEST_FLAG);
+
+                    // Check if player is owner or member of any applicable region
+                    boolean isOwner = false;
+                    boolean isMember = false;
+                    for (ProtectedRegion region : set.getRegions()) {
+                        if (region.isOwner(localPlayer)) {
+                            isOwner = true;
+                        }
+                        if (region.isMember(localPlayer)) {
+                            isMember = true;
                         }
                     }
 
-                    generateLog("Player [" + p.getName() + "] died in region " + pr.getId());
-
-                    Boolean ownerFlag = pr.getFlag(DEADCHEST_OWNER_FLAG);
-                    Boolean memberFlag = pr.getFlag(DEADCHEST_MEMBER_FLAG);
-                    Boolean guestFlag = pr.getFlag(DEADCHEST_GUEST_FLAG);
-
                     Boolean chestPermission = true;
                     if (ownerFlag != null && !ownerFlag) {
-                        if (pr.getOwners().contains(p.getUniqueId())) {
+                        if (isOwner) {
                             chestPermission = false;
                         }
                     }
                     if (memberFlag != null && !memberFlag) {
-                        if (pr.getMembers().contains(p.getUniqueId())) {
+                        if (isMember) {
                             chestPermission = false;
                         }
                     }
@@ -92,7 +100,7 @@ public class WorldGuardSoftDependenciesChecker {
                     }
 
                     if(!chestPermission) {
-                        generateLog("Player [" + p.getName() + "] died without [ Worldguard] region permission : No Deadchest generated");
+                        generateLog("Player [" + p.getName() + "] died without [Worldguard] region permission : No Deadchest generated");
                         return false;
                     }
 
