@@ -259,7 +259,7 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
 
                     targetPlayer = Bukkit.getPlayer(UUID.fromString(data.getPlayerUUID()));
 
-                    if (targetPlayer != null && player.isOnline()) {
+                    if (targetPlayer != null && targetPlayer.isOnline()) {
                         for (ItemStack itemStack : data.getInventory()) {
                             if (itemStack != null) {
                                 targetPlayer.getWorld().dropItemNaturally(targetPlayer.getLocation(), itemStack);
