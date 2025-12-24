@@ -15,9 +15,11 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 import static me.crylonz.deadchest.DeadChestLoader.*;
@@ -254,33 +256,70 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
     public void registerGiveBack() {
         registerCommand("dc giveback {0}", Permission.GIVEBACK.label, () -> {
             Player targetPlayer = null;
+            ChestData foundChestData = null;
+
             for (ChestData data : chestDataList) {
                 if (data.getPlayerName().equalsIgnoreCase(args[1])) {
-
                     targetPlayer = Bukkit.getPlayer(UUID.fromString(data.getPlayerUUID()));
-
-                    if (targetPlayer != null && targetPlayer.isOnline()) {
-                        for (ItemStack itemStack : data.getInventory()) {
-                            if (itemStack != null) {
-                                targetPlayer.getWorld().dropItemNaturally(targetPlayer.getLocation(), itemStack);
-                            }
-                        }
-
-                        // Remove chest and hologram
-                        targetPlayer.getWorld().getBlockAt(data.getChestLocation()).setType(Material.AIR);
-                        data.removeArmorStand();
-                        chestDataList.remove(data);
-                    }
+                    foundChestData = data;
                     break;
                 }
             }
-            if (targetPlayer != null) {
+
+            if (targetPlayer != null && targetPlayer.isOnline() && foundChestData != null) {
+                // Restore items to player's inventory (same logic as chest click with DROP_MODE=1)
+                restoreInventoryToPlayer(foundChestData, targetPlayer);
+
+                // Remove chest and hologram
+                targetPlayer.getWorld().getBlockAt(foundChestData.getChestLocation()).setType(Material.AIR);
+                foundChestData.removeArmorStand();
+                chestDataList.remove(foundChestData);
+                ChestDataRepository.saveAllAsync(chestDataList);
+
                 sender.sendMessage(local.get("loc_prefix") + local.get("loc_dcgbsuccess"));
                 targetPlayer.sendMessage(local.get("loc_prefix") + local.get("loc_gbplayer"));
             } else {
                 sender.sendMessage(local.get("loc_prefix") + local.get("loc_givebackInfo"));
             }
         });
+    }
+
+    /**
+     * Restores inventory and XP to player (same logic as chest click with DROP_MODE=1)
+     */
+    private void restoreInventoryToPlayer(ChestData cd, Player player) {
+        org.bukkit.inventory.PlayerInventory playerInventory = player.getInventory();
+
+        // Give XP back if it was stored (respects STORE_XP config)
+        if (cd.getXpStored() != 0) {
+            player.giveExp(cd.getXpStored());
+        }
+
+        ItemStack[] originalContents = cd.getInventory().toArray(new ItemStack[0]);
+        List<ItemStack> slotReplacedItems = new ArrayList<>();
+
+        // First pass: Restore items to their original inventory positions
+        for (int i = 0; i < originalContents.length; i++) {
+            ItemStack item = originalContents[i];
+            if (item != null) {
+                if (i < playerInventory.getSize()
+                        && (playerInventory.getItem(i) == null || playerInventory.getItem(i).getType() == Material.AIR)) {
+                    playerInventory.setItem(i, item);
+                } else {
+                    slotReplacedItems.add(item);
+                }
+            }
+        }
+
+        // Second pass: Restore items that couldn't fit in original slots
+        // into empty slots or drop them if inventory is full
+        for (ItemStack item : slotReplacedItems) {
+            if (playerInventory.firstEmpty() != -1) {
+                playerInventory.addItem(item);
+            } else {
+                player.getWorld().dropItemNaturally(player.getLocation(), item);
+            }
+        }
     }
 
     public void registerIgnoreList() {
