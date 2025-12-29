@@ -20,58 +20,57 @@ public class DCTabCompletion implements TabCompleter {
 
         list.clear();
         if (cmd.getName().equalsIgnoreCase("dc")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
+            Player player = sender instanceof Player ? (Player) sender : null;
+            boolean isConsole = player == null;
 
-                if (args.length == 1) {
-                    if (player.hasPermission(Permission.ADMIN.label)) {
-                        list.add("reload");
-                        list.add("removeinfinite");
-                        list.add("removeall");
-                        list.add("repair");
-                        list.add("ignore");
-                    }
-
-                    if (PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.LIST_ALL)) {
-                        list.add("remove");
-                    }
-
-                    if (PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
-                        list.add("giveBack");
-                    }
-
-                    if (PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.REMOVE_ALL)) {
-                        list.add("list");
-                    }
+            if (args.length == 1) {
+                // Console has all permissions, players need to check
+                if (isConsole || player.hasPermission(Permission.ADMIN.label)) {
+                    list.add("reload");
+                    list.add("removeinfinite");
+                    list.add("removeall");
+                    list.add("repair");
+                    list.add("ignore");
                 }
 
-                if (args.length == 2) {
-                    if (args[0].equals("remove")) {
-                        if (PermissionUtils.hasAdminOr(player, Permission.REMOVE_OTHER)) {
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                list.add(p.getName());
-                            }
-                        }
-                    }
-                    if (args[0].equals("repair") && player.hasPermission(Permission.ADMIN.label)) {
-                        list.add("force");
-                    }
-                    if (args[0].equals("list")) {
-                        if (PermissionUtils.hasAdminOr(player, Permission.LIST_OTHER)) {
-                            list.add("all");
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                list.add(p.getName());
-                            }
-                        }
-                    }
-                    if (args[0].equals("giveback")) {
-                        if (PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                list.add(p.getName());
-                            }
-                        }
-                    }
+                if (isConsole || PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.LIST_ALL)) {
+                    list.add("remove");
+                }
 
+                if (isConsole || PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
+                    list.add("giveBack");
+                }
+
+                if (isConsole || PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.REMOVE_ALL)) {
+                    list.add("list");
+                }
+            }
+
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("remove")) {
+                    if (isConsole || PermissionUtils.hasAdminOr(player, Permission.REMOVE_OTHER)) {
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            list.add(p.getName());
+                        }
+                    }
+                }
+                if (args[0].equalsIgnoreCase("repair") && (isConsole || player.hasPermission(Permission.ADMIN.label))) {
+                    list.add("force");
+                }
+                if (args[0].equalsIgnoreCase("list")) {
+                    if (isConsole || PermissionUtils.hasAdminOr(player, Permission.LIST_OTHER)) {
+                        list.add("all");
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            list.add(p.getName());
+                        }
+                    }
+                }
+                if (args[0].equalsIgnoreCase("giveback")) {
+                    if (isConsole || PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
+                        for (Player p : Bukkit.getOnlinePlayers()) {
+                            list.add(p.getName());
+                        }
+                    }
                 }
             }
         }
