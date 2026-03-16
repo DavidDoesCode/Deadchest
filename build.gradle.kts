@@ -1,6 +1,6 @@
 allprojects {
     group = "me.crylonz.deadchest"
-    version = "4.26.0"
+    version = "4.27.0"
 }
 
 tasks.register("printVersion") {
