@@ -267,8 +267,8 @@ public class DeadChestManager {
                 });
             } else {
                 DeadChestLoader.getChestDataCache().removeChestData(chestData);
+                generateLog("Deadchest of [" + chestData.getPlayerName() + "] has expired in " + world.getName());
             }
-            generateLog("Deadchest of [" + chestData.getPlayerName() + "] has expired in " + world.getName());
             return;
         }
 

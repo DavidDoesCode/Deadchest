@@ -194,6 +194,31 @@ class DeadChestManagerTest {
     }
 
     @Test
+    void handleChestTickDoesNotLogExpiredChestWhenArmorStandRemovalFails() throws Exception {
+        Path logPath = Path.of("plugins", "DeadChest", "deadchest.log");
+        Files.deleteIfExists(logPath);
+
+        Location loc = new Location(world, 32, 64, 32);
+        world.getBlockAt(loc).setType(Material.CHEST);
+
+        ChestData chest = mock(ChestData.class);
+        when(chest.getChestLocation()).thenReturn(loc);
+        when(chest.getChestDate()).thenReturn(new Date(System.currentTimeMillis() - 10_000L));
+        when(chest.isInfinity()).thenReturn(false);
+        when(chest.isRemovedBlock()).thenReturn(false);
+        when(chest.removeArmorStand()).thenReturn(false);
+        when(chest.getPlayerName()).thenReturn("Steve");
+
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getBoolean(ConfigKey.ITEMS_DROPPED_AFTER_TIMEOUT)).thenReturn(false);
+
+        DeadChestManager.handleChestTick(chest, new Date());
+
+        assertFalse(Files.exists(logPath));
+        verify(chest).update(any());
+    }
+
+    @Test
     void generateHologramReturnsNullWhenWorldMissing() {
         assertNull(DeadChestManager.generateHologram(new Location(null, 0, 64, 0), "txt", 0, 0, 0, true));
     }
