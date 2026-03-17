@@ -14,6 +14,9 @@ on:
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     uses: Stellionix/docs-common/.github/workflows/deploy-docs.yml@main
