@@ -8,7 +8,7 @@ You can download DeadChest from the official sources below:
 - [GitHub](https://github.com/apavarino/Deadchest) (build from source)
 
 !!! warning
-Avoid downloading the plugin from unofficial mirrors.
+    Avoid downloading the plugin from unofficial mirrors.
 
 ### Requirements
 

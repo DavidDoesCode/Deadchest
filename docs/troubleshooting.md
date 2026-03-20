@@ -26,7 +26,7 @@ You need admin permission (`deadchest.admin`) for repair commands.
 4. Check startup logs for localization/config parsing warnings.
 
 !!! note
-Avoid deleting plugin data unless you know the impact on active chests.
+    Avoid deleting plugin data unless you know the impact on active chests.
 
 ### Commands not working
 
