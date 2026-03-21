@@ -27,15 +27,33 @@ After any change, run `/dc reload`.
 
 ### Chest
 
-| Key                           | Type    | Default                 | Description                                                     |
-|-------------------------------|---------|-------------------------|-----------------------------------------------------------------|
-| `chest.owner-only-open`       | boolean | `true`                  | Only owner can open chest (except `deadchest.chestPass`).       |
-| `chest.duration-seconds`      | integer | `300`                   | Chest lifetime in seconds. `0` = infinite.                      |
-| `chest.indestructible`        | boolean | `true`                  | Protect chest block from destruction/explosions.                |
-| `chest.max-per-player`        | integer | `15`                    | Max active chests per player. `0` = unlimited.                  |
-| `chest.recovery-mode`         | string  | `inventory-then-ground` | `inventory-then-ground` or `ground-drop`.                       |
-| `chest.block-type`            | string  | `chest`                 | `chest`, `player-head`, `barrel`, `shulker-box`, `ender-chest`. |
-| `chest.drop-items-on-timeout` | boolean | `false`                 | On timeout: drop items (`true`) or remove contents (`false`).   |
+| Key                           | Type    | Default                 | Description                                                                 |
+|-------------------------------|---------|-------------------------|-----------------------------------------------------------------------------|
+| `chest.owner-only-open`       | boolean | `true`                  | During the private phase: only owner can open chest (except `deadchest.chestPass`). |
+| `chest.duration-seconds`      | integer | `300`                   | Duration of the private phase in seconds. `0` = infinite private phase.     |
+| `chest.indestructible`        | boolean | `true`                  | Protect chest block from destruction/explosions.                            |
+| `chest.max-per-player`        | integer | `15`                    | Max active chests per player. `0` = unlimited.                              |
+| `chest.recovery-mode`         | string  | `inventory-then-ground` | `inventory-then-ground` or `ground-drop`.                                   |
+| `chest.block-type`            | string  | `chest`                 | `chest`, `player-head`, `barrel`, `shulker-box`, `ender-chest`.             |
+| `chest.drop-items-on-timeout` | boolean | `false`                 | Legacy one-phase timeout behavior when `chest.loot.enabled=false`: drop items (`true`) or remove contents (`false`). |
+
+### Chest - Public Loot Phase
+
+| Key                                      | Type    | Default | Description |
+|------------------------------------------|---------|---------|-------------|
+| `chest.loot.enabled`                     | boolean | `false` | Enable a second public loot phase after the private phase ends. |
+| `chest.loot.public-duration-seconds`     | integer | `300`   | Duration of the public phase in seconds. `0` = infinite public phase. |
+| `chest.loot.drop-items-on-timeout`       | boolean | `false` | At the end of the public phase: drop items (`true`) or remove contents (`false`). |
+| `chest.loot.public-access.owner`         | boolean | `true`  | During public phase, allow the owner to recover the chest. |
+| `chest.loot.public-access.killer`        | boolean | `true`  | During public phase, allow the PvP killer to loot the chest. |
+| `chest.loot.public-access.other-players` | boolean | `true`  | During public phase, allow any other player to loot the chest. |
+
+The timeout model is therefore:
+
+- Phase 1: private phase controlled by `chest.duration-seconds`.
+- Phase 2: optional public phase controlled by `chest.loot.*`.
+- If `chest.loot.enabled=false`, the chest expires directly after the private phase and uses `chest.drop-items-on-timeout`.
+- If `chest.loot.enabled=true`, the chest enters the public phase after the private phase, then expires using `chest.loot.drop-items-on-timeout`.
 
 ### Permissions
 
@@ -108,6 +126,14 @@ After any change, run `/dc reload`.
 | `visuals.effect-animation.style`   | string  | `ender` | Effect style: `soul`, `flame`, `ender`.          |
 | `visuals.effect-animation.radius`  | number  | `0.8`   | Orbit radius around chest center.                |
 | `visuals.effect-animation.speed`   | number  | `1.1`   | Orbit speed multiplier.                          |
+
+DeadChest holograms now use three lines when available:
+
+- top line: access state (`PRIVATE`, `OPEN`, `PUBLIC`, `KILLER`, `OWNER`, `SHARE`)
+- middle line: owner name
+- bottom line: remaining time
+
+The access-state line reflects both the private/public phase and the configured access rules during the public phase.
 
 ### Visuals - Pickup Animation
 

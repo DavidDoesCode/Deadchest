@@ -7,11 +7,33 @@ This page explains how DeadChest behaves in common gameplay situations.
 When a player dies, DeadChest creates a protected chest at a suitable location near the death point.
 By default:
 
-- chest access is owner-only
-- a hologram shows owner and remaining time
+- chest access starts in a private owner-only phase
+- a hologram shows access state, owner, and remaining time
 - the chest expires after configured timeout (unless infinite)
 
 All behavior is configurable in [configuration](configuration.md).
+
+### Timeout model
+
+DeadChest supports two phases:
+
+- Private phase: controlled by `chest.duration-seconds`
+- Public loot phase: optional, controlled by `chest.loot.enabled` and `chest.loot.*`
+
+If the public loot phase is disabled, the chest expires directly after the private phase.
+If the public loot phase is enabled, the chest becomes public or semi-public after the private timer ends,
+depending on the configured public access rules.
+
+### Hologram states
+
+The top hologram line represents the current access state:
+
+- `PRIVATE`: owner-only private phase
+- `OPEN`: private phase, but chest is open to everyone
+- `PUBLIC`: public phase, everyone can loot
+- `KILLER`: public phase reserved to the killer
+- `OWNER`: public phase reserved to the owner
+- `SHARE`: public phase with mixed/restricted access rules
 
 ### Chest placement rules
 

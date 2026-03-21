@@ -1,7 +1,7 @@
 ﻿# DeadChest Documentation
 
 <div class="hero">
-  <p>Modern death-chest plugin for Bukkit ecosystems: Spigot, Paper, Purpur, Tuinity, and more. This documentation covers setup, configuration, integrations, and API usage.</p>
+  <p>Modern death-chest plugin for Bukkit ecosystems: Spigot, Paper, Purpur, Tuinity, and more. This documentation covers setup, two-phase loot configuration, hologram states, integrations, and API usage.</p>
 </div>
 
 ![DeadChest](assets/images/deadchest-logo.png){ .home-logo }
