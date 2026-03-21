@@ -178,6 +178,12 @@ public class DeadChestLoader {
         config.register(ConfigKey.GENERATE_DEADCHEST_IN_CREATIVE.toString(), true);
         config.register(ConfigKey.DISPLAY_POSITION_ON_DEATH.toString(), true);
         config.register(ConfigKey.ITEMS_DROPPED_AFTER_TIMEOUT.toString(), false);
+        config.register(ConfigKey.LOOT_ENABLED.toString(), false);
+        config.register(ConfigKey.LOOT_PUBLIC_DURATION.toString(), 300);
+        config.register(ConfigKey.LOOT_DROP_ITEMS_ON_TIMEOUT.toString(), false);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER.toString(), true);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER.toString(), true);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS.toString(), true);
         config.register(ConfigKey.WORLD_GUARD_DETECTION.toString(), false);
         config.register(ConfigKey.WORLD_GUARD_FLAG_DEFAULT.toString(), false);
         config.register(ConfigKey.DROP_MODE.toString(), "inventory-then-ground");

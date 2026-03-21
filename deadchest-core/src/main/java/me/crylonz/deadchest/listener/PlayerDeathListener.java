@@ -35,7 +35,8 @@ public class PlayerDeathListener implements Listener {
 
     // Keep array order explicit when used
     private static final int HOLO_TIME = 0;
-    private static final int HOLO_NAME = 1;
+    private static final int HOLO_STATUS = 1;
+    private static final int HOLO_NAME = 2;
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerDeathEvent(PlayerDeathEvent event) {
@@ -97,7 +98,7 @@ public class PlayerDeathListener implements Listener {
         ArmorStand[] holos = createHolograms(block, event.getEntity().getDisplayName());
 
         // 8) Building & saving the DeadChest (ChestData), then restoring player inventory
-        buildAndSaveChestData(player, block, holos[HOLO_TIME], holos[HOLO_NAME], itemsToStore);
+        buildAndSaveChestData(player, block, holos[HOLO_TIME], holos[HOLO_NAME], holos[HOLO_STATUS], itemsToStore);
 
         // 9) Clean up drops & remove remaining items on player side
         clearEventDropsAndPlayerInventory(event, player);
@@ -353,15 +354,15 @@ public class PlayerDeathListener implements Listener {
         return itemsToStore;
     }
 
-    private void buildAndSaveChestData(Player p, Block b, ArmorStand holoTime, ArmorStand holoName, ItemStack[] itemsToStore) {
+    private void buildAndSaveChestData(Player p, Block b, ArmorStand holoTime, ArmorStand holoName, ArmorStand holoStatus, ItemStack[] itemsToStore) {
         PlayerInventory inv = p.getInventory();
         ItemStack[] snapshot = inv.getContents();
         inv.setContents(itemsToStore);
-        DeadChestLoader.getChestDataCache().addChestData(cerateChestData(p, b, holoTime, holoName, inv));
+        DeadChestLoader.getChestDataCache().addChestData(cerateChestData(p, b, holoTime, holoName, holoStatus, inv));
         inv.setContents(snapshot);
     }
 
-    private static ChestData cerateChestData(final Player p, final Block b, final ArmorStand holoTime, final ArmorStand holoName, final PlayerInventory inv) {
+    private static ChestData cerateChestData(final Player p, final Block b, final ArmorStand holoTime, final ArmorStand holoName, final ArmorStand holoStatus, final PlayerInventory inv) {
         final ChestData chestData = new ChestData(
                 inv,
                 b.getLocation(),
@@ -371,6 +372,7 @@ public class PlayerDeathListener implements Listener {
                 holoName,
                 getTotalExperienceToStore(p)
         );
+        chestData.setHolographicStatusId(holoStatus == null ? null : holoStatus.getUniqueId());
         chestData.save(containsChestOnLoc -> {
             if (containsChestOnLoc){
                 generateLog("Could not generate deadchest, as dublicate exist in database on same location [" + p.getName() + "] in " + b.getWorld().getName() +

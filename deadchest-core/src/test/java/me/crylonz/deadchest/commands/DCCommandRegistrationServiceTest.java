@@ -124,6 +124,7 @@ public class DCCommandRegistrationServiceTest {
                 false,
                 holoLocation,
                 timerId,
+                null,
                 ownerId,
                 player.getWorld().getName(),
                 0

@@ -1,14 +1,18 @@
-####################################################################################################
+################################################################################
 # DeadChest Configuration
 #
-# Plugin page and documentation:
+# Plugin page
+#   https://modrinth.com/plugin/dead-chest
 #   https://dev.bukkit.org/projects/dead-chest
+#
+# Documentation
+#   https://stellionix.github.io/Deadchest/latest/
 #
 # Support (Discord):
 #   https://discordapp.com/invite/jCsvJxS
 #
 # After editing this file, run '/dc reload' to apply the new settings.
-####################################################################################################
+################################################################################
 
 # Configuration schema version.
 # Increased when key structure changes.
@@ -32,7 +36,10 @@ chest:
   # Bypass permission: 'deadchest.chestPass'
   owner-only-open: true
 
-  # DeadChest lifetime in seconds.
+  # Duration in seconds of the private phase.
+  # During this phase, normal access rules apply.
+  # If loot.enabled=true, the chest enters the public loot phase after this timer ends.
+  # If loot.enabled=false, the chest expires directly after this timer.
   # 0 = no expiration (infinite)
   duration-seconds: 300
 
@@ -55,10 +62,36 @@ chest:
   # chest | player-head | barrel | shulker-box | ender-chest
   block-type: chest
 
-  # Behavior when the chest timer expires:
-  # true  = drop items on the ground
-  # false = remove chest contents
+  # Expiration behavior when loot.enabled=false.
+  # true  = drop remaining items on the ground at the end of the private phase
+  # false = remove chest contents at the end of the private phase
   drop-items-on-timeout: false
+
+  loot:
+    # Enables the second public loot phase after the private phase.
+    # true  = start a public phase once duration-seconds ends
+    # false = keep the private one-phase behavior
+    enabled: false
+
+    # Duration in seconds of the public loot phase.
+    # Starts only after the private phase ends.
+    # 0 = infinite public phase
+    public-duration-seconds: 300
+
+    # Expiration behavior at the end of the public phase.
+    # true  = drop remaining items on the ground
+    # false = remove chest contents
+    drop-items-on-timeout: false
+
+    public-access:
+      # Owner can still recover the chest during public phase.
+      owner: true
+
+      # Killer can loot during public phase for PvP deaths.
+      killer: true
+
+      # Any player can loot during public phase.
+      other-players: true
 
 permissions:
   # Require permission to generate a DeadChest on death.

@@ -441,6 +441,7 @@ class SQLiteRepositoryTest {
                 false,
                 holoLocation,
                 timerId,
+                null,
                 ownerId,
                 world.getName(),
                 xp
@@ -454,6 +455,7 @@ class SQLiteRepositoryTest {
         assertEquals(expected.isInfinity(), actual.isInfinity());
         assertEquals(expected.isRemovedBlock(), actual.isRemovedBlock());
         assertEquals(expected.getHolographicTimerId(), actual.getHolographicTimerId());
+        assertEquals(expected.getHolographicStatusId(), actual.getHolographicStatusId());
         assertEquals(expected.getHolographicOwnerId(), actual.getHolographicOwnerId());
         assertEquals(expected.getWorldName(), actual.getWorldName());
         assertEquals(expected.getXpStored(), actual.getXpStored());

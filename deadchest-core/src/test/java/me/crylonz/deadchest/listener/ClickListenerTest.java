@@ -21,10 +21,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -165,5 +162,91 @@ class ClickListenerTest {
 
         assertTrue(event.isCancelled(), "Event should be cancelled when player lacks GET permission");
         assertEquals("[DC] You cannot take this chest", player.nextMessage());
+    }
+
+    @Test
+    void testClickOnDeadChest_DuringPublicPhase_OtherPlayerCanLoot() {
+        when(DeadChestLoader.config.getBoolean(ConfigKey.ONLY_OWNER_CAN_OPEN_CHEST)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.REQUIRE_PERMISSION_TO_GET_CHEST)).thenReturn(false);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(true);
+        when(DeadChestLoader.config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(DeadChestLoader.config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(DeadChestLoader.config.getInt(ConfigKey.DROP_MODE)).thenReturn(1);
+
+        ChestData cd = mock(ChestData.class);
+        when(cd.getChestLocation()).thenReturn(chestBlock.getLocation());
+        when(cd.getPlayerUUID()).thenReturn(UUID.randomUUID());
+        when(cd.getChestDate()).thenReturn(new Date(System.currentTimeMillis() - 10_000L));
+        when(cd.isInfinity()).thenReturn(false);
+        when(cd.getInventory()).thenReturn(List.of(new ItemStack(Material.DIAMOND)));
+        when(cd.getXpStored()).thenReturn(0);
+        deadChest.addChestData(cd);
+
+        PlayerInteractEvent event = new PlayerInteractEvent(player, Action.LEFT_CLICK_BLOCK,
+                new ItemStack(Material.CHEST), chestBlock, BlockFace.UP);
+
+        listener.onClick(event);
+
+        assertTrue(player.getInventory().contains(Material.DIAMOND), "Public phase chest should be lootable by other players");
+        assertEquals(Material.AIR, chestBlock.getType(), "Looted public chest should be removed");
+    }
+
+    @Test
+    void testClickOnDeadChest_DuringPublicPhase_KillerCanLootWhenEnabled() {
+        PlayerMock killer = new PlayerMock(MockBukkit.getMock(), "Alex");
+        when(DeadChestLoader.config.getBoolean(ConfigKey.ONLY_OWNER_CAN_OPEN_CHEST)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.REQUIRE_PERMISSION_TO_GET_CHEST)).thenReturn(false);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER)).thenReturn(false);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(false);
+        when(DeadChestLoader.config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(DeadChestLoader.config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(DeadChestLoader.config.getInt(ConfigKey.DROP_MODE)).thenReturn(1);
+
+        ChestData cd = mock(ChestData.class);
+        when(cd.getChestLocation()).thenReturn(chestBlock.getLocation());
+        when(cd.getPlayerUUID()).thenReturn(UUID.randomUUID());
+        when(cd.getKillerUUID()).thenReturn(killer.getUniqueId());
+        when(cd.getChestDate()).thenReturn(new Date(System.currentTimeMillis() - 10_000L));
+        when(cd.isInfinity()).thenReturn(false);
+        when(cd.getInventory()).thenReturn(List.of(new ItemStack(Material.EMERALD)));
+        when(cd.getXpStored()).thenReturn(0);
+        deadChest.addChestData(cd);
+
+        PlayerInteractEvent event = new PlayerInteractEvent(killer, Action.LEFT_CLICK_BLOCK,
+                new ItemStack(Material.CHEST), chestBlock, BlockFace.UP);
+
+        listener.onClick(event);
+
+        assertTrue(killer.getInventory().contains(Material.EMERALD), "Configured killer should be able to loot during public phase");
+    }
+
+    @Test
+    void testClickOnDeadChest_DuringPublicPhase_OtherPlayerDeniedWhenDisabled() {
+        when(DeadChestLoader.config.getBoolean(ConfigKey.ONLY_OWNER_CAN_OPEN_CHEST)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(false);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER)).thenReturn(false);
+        when(DeadChestLoader.config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER)).thenReturn(true);
+        when(DeadChestLoader.config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(DeadChestLoader.config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+
+        ChestData cd = mock(ChestData.class);
+        when(cd.getChestLocation()).thenReturn(chestBlock.getLocation());
+        when(cd.getPlayerUUID()).thenReturn(UUID.randomUUID());
+        when(cd.getKillerUUID()).thenReturn(UUID.randomUUID());
+        when(cd.getChestDate()).thenReturn(new Date(System.currentTimeMillis() - 10_000L));
+        when(cd.isInfinity()).thenReturn(false);
+        deadChest.addChestData(cd);
+
+        PlayerInteractEvent event = new PlayerInteractEvent(player, Action.LEFT_CLICK_BLOCK,
+                new ItemStack(Material.CHEST), chestBlock, BlockFace.UP);
+
+        listener.onClick(event);
+
+        assertTrue(event.isCancelled(), "Other player should be denied when public access is disabled");
+        assertEquals("[DC] You are not the owner", player.nextMessage());
     }
 }

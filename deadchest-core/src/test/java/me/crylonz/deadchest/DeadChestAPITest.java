@@ -95,6 +95,7 @@ public class DeadChestAPITest {
                 false,
                 holoLocation,
                 timerId,
+                null,
                 ownerId,
                 world.getName(),
                 0

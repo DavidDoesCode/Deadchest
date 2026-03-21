@@ -48,6 +48,12 @@ class DeadChestConfigMigrationTest {
         config.register(ConfigKey.INDESTRUCTIBLE_CHEST.toString(), true);
         config.register(ConfigKey.DROP_MODE.toString(), "inventory-then-ground");
         config.register(ConfigKey.DROP_BLOCK.toString(), "chest");
+        config.register(ConfigKey.LOOT_ENABLED.toString(), false);
+        config.register(ConfigKey.LOOT_PUBLIC_DURATION.toString(), 300);
+        config.register(ConfigKey.LOOT_DROP_ITEMS_ON_TIMEOUT.toString(), false);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER.toString(), true);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER.toString(), true);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS.toString(), true);
         config.register(ConfigKey.EXCLUDED_WORLDS.toString(), Arrays.asList());
 
         assertFalse(config.getBoolean(ConfigKey.AUTO_UPDATE));
@@ -55,6 +61,12 @@ class DeadChestConfigMigrationTest {
         assertFalse(config.getBoolean(ConfigKey.INDESTRUCTIBLE_CHEST));
         assertEquals(2, config.getInt(ConfigKey.DROP_MODE));
         assertEquals(5, config.getInt(ConfigKey.DROP_BLOCK));
+        assertFalse(config.getBoolean(ConfigKey.LOOT_ENABLED));
+        assertEquals(300, config.getInt(ConfigKey.LOOT_PUBLIC_DURATION));
+        assertFalse(config.getBoolean(ConfigKey.LOOT_DROP_ITEMS_ON_TIMEOUT));
+        assertTrue(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER));
+        assertTrue(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER));
+        assertTrue(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS));
         assertEquals(Arrays.asList("world", "nether"), config.getArray(ConfigKey.EXCLUDED_WORLDS));
     }
 
@@ -233,6 +245,14 @@ class DeadChestConfigMigrationTest {
                     + "  recovery-mode: inventory-then-ground\n"
                     + "  block-type: chest\n"
                     + "  drop-items-on-timeout: false\n"
+                    + "  loot:\n"
+                    + "    enabled: false\n"
+                    + "    public-duration-seconds: 300\n"
+                    + "    drop-items-on-timeout: false\n"
+                    + "    public-access:\n"
+                    + "      owner: true\n"
+                    + "      killer: true\n"
+                    + "      other-players: true\n"
                     + "permissions:\n"
                     + "  require-generate: false\n"
                     + "  require-claim: false\n"
@@ -298,6 +318,12 @@ class DeadChestConfigMigrationTest {
         config.register(ConfigKey.DROP_MODE.toString(), "inventory-then-ground");
         config.register(ConfigKey.DROP_BLOCK.toString(), "chest");
         config.register(ConfigKey.ITEMS_DROPPED_AFTER_TIMEOUT.toString(), false);
+        config.register(ConfigKey.LOOT_ENABLED.toString(), false);
+        config.register(ConfigKey.LOOT_PUBLIC_DURATION.toString(), 300);
+        config.register(ConfigKey.LOOT_DROP_ITEMS_ON_TIMEOUT.toString(), false);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER.toString(), true);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER.toString(), true);
+        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS.toString(), true);
         config.register(ConfigKey.GENERATE_ON_LAVA.toString(), true);
         config.register(ConfigKey.GENERATE_ON_WATER.toString(), true);
         config.register(ConfigKey.GENERATE_ON_RAILS.toString(), true);
@@ -333,6 +359,12 @@ class DeadChestConfigMigrationTest {
         assertEquals("ground-drop", migrated.getString("chest.recovery-mode"));
         assertEquals("shulker-box", migrated.getString("chest.block-type"));
         assertTrue(migrated.getBoolean("chest.drop-items-on-timeout"));
+        assertFalse(migrated.getBoolean("chest.loot.enabled"));
+        assertEquals(300, migrated.getInt("chest.loot.public-duration-seconds"));
+        assertFalse(migrated.getBoolean("chest.loot.drop-items-on-timeout"));
+        assertTrue(migrated.getBoolean("chest.loot.public-access.owner"));
+        assertTrue(migrated.getBoolean("chest.loot.public-access.killer"));
+        assertTrue(migrated.getBoolean("chest.loot.public-access.other-players"));
         assertFalse(migrated.getBoolean("generation.allow-on-lava"));
         assertFalse(migrated.getBoolean("generation.allow-on-water"));
         assertFalse(migrated.getBoolean("generation.allow-on-rails"));

@@ -42,7 +42,9 @@ public class ChestDataRepository {
                                 "holo_yaw REAL NOT NULL," +
                                 "holo_pitch REAL NOT NULL," +
                                 "holographic_timer_id TEXT NOT NULL," +
+                                "holographic_status_id TEXT," +
                                 "holographic_owner_id TEXT NOT NULL," +
+                                "killer_uuid TEXT," +
                                 "world_name TEXT NOT NULL," +
                                 "xp_stored INTEGER NOT NULL," +
                                 "inventory BLOB" +
@@ -115,8 +117,8 @@ public class ChestDataRepository {
                 "player_uuid, player_name, chest_world, chest_x, chest_y, chest_z, chest_yaw, chest_pitch, " +
                 "chest_date, is_infinity, is_removed_block, " +
                 "holo_world, holo_x, holo_y, holo_z, holo_yaw, holo_pitch, " +
-                "holographic_timer_id, holographic_owner_id, world_name, xp_stored, inventory" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "holographic_timer_id, holographic_status_id, holographic_owner_id, killer_uuid, world_name, xp_stored, inventory" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = db.connection();
              Statement clear = conn.createStatement();
@@ -152,10 +154,20 @@ public class ChestDataRepository {
                 ps.setFloat(17, holoLoc.getPitch());
 
                 ps.setString(18, chest.getHolographicTimerId().toString());
-                ps.setString(19, chest.getHolographicOwnerId().toString());
-                ps.setString(20, chest.getWorldName());
-                ps.setInt(21, chest.getXpStored());
-                ps.setBytes(22, ItemBytes.toBytesList(chest.getInventory()));
+                if (chest.getHolographicStatusId() == null) {
+                    ps.setNull(19, Types.VARCHAR);
+                } else {
+                    ps.setString(19, chest.getHolographicStatusId().toString());
+                }
+                ps.setString(20, chest.getHolographicOwnerId().toString());
+                if (chest.getKillerUUID() == null) {
+                    ps.setNull(21, Types.VARCHAR);
+                } else {
+                    ps.setString(21, chest.getKillerUUID().toString());
+                }
+                ps.setString(22, chest.getWorldName());
+                ps.setInt(23, chest.getXpStored());
+                ps.setBytes(24, ItemBytes.toBytesList(chest.getInventory()));
 
 
                 ps.addBatch();
@@ -173,8 +185,8 @@ public class ChestDataRepository {
                 "player_uuid, player_name, chest_world, chest_x, chest_y, chest_z, chest_yaw, chest_pitch, " +
                 "chest_date, is_infinity, is_removed_block, " +
                 "holo_world, holo_x, holo_y, holo_z, holo_yaw, holo_pitch, " +
-                "holographic_timer_id, holographic_owner_id, world_name, xp_stored, inventory" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "holographic_timer_id, holographic_status_id, holographic_owner_id, killer_uuid, world_name, xp_stored, inventory" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         final String sqlUpdate = "UPDATE chest_data SET " +
                 "chest_date = ?," +
                 " is_infinity = ?, " +
@@ -186,7 +198,9 @@ public class ChestDataRepository {
                 "holo_yaw = ?, " +
                 "holo_pitch = ?, " +
                 "holographic_timer_id = ?, " +
+                "holographic_status_id = ?, " +
                 "holographic_owner_id = ?, " +
+                "killer_uuid = ?, " +
                 "world_name = ?, " +
                 "xp_stored = ?, " +
                 "inventory = ? " +
@@ -239,7 +253,17 @@ public class ChestDataRepository {
                         psInsert.setFloat(i++, holoLoc.getPitch());
 
                         psInsert.setString(i++, chest.getHolographicTimerId().toString());
+                        if (chest.getHolographicStatusId() == null) {
+                            psInsert.setNull(i++, Types.VARCHAR);
+                        } else {
+                            psInsert.setString(i++, chest.getHolographicStatusId().toString());
+                        }
                         psInsert.setString(i++, chest.getHolographicOwnerId().toString());
+                        if (chest.getKillerUUID() == null) {
+                            psInsert.setNull(i++, Types.VARCHAR);
+                        } else {
+                            psInsert.setString(i++, chest.getKillerUUID().toString());
+                        }
                         psInsert.setString(i++, chest.getWorldName());
                         psInsert.setInt(i++, chest.getXpStored());
                         psInsert.setBytes(i, ItemBytes.toBytesList(chest.getInventory()));
@@ -259,7 +283,17 @@ public class ChestDataRepository {
                         psUpdate.setFloat(i++, holoLoc.getPitch());
 
                         psUpdate.setString(i++, chest.getHolographicTimerId().toString());
+                        if (chest.getHolographicStatusId() == null) {
+                            psUpdate.setNull(i++, Types.VARCHAR);
+                        } else {
+                            psUpdate.setString(i++, chest.getHolographicStatusId().toString());
+                        }
                         psUpdate.setString(i++, chest.getHolographicOwnerId().toString());
+                        if (chest.getKillerUUID() == null) {
+                            psUpdate.setNull(i++, Types.VARCHAR);
+                        } else {
+                            psUpdate.setString(i++, chest.getKillerUUID().toString());
+                        }
                         psUpdate.setString(i++, chest.getWorldName());
                         psUpdate.setInt(i++, chest.getXpStored());
                         psUpdate.setBytes(i++, ItemBytes.toBytesList(chest.getInventory()));
@@ -299,7 +333,9 @@ public class ChestDataRepository {
                 "holo_yaw = ?, " +
                 "holo_pitch = ?, " +
                 "holographic_timer_id = ?, " +
+                "holographic_status_id = ?, " +
                 "holographic_owner_id = ?, " +
+                "killer_uuid = ?, " +
                 "world_name = ?, " +
                 "xp_stored = ?, " +
                 "inventory = ? " +
@@ -342,16 +378,26 @@ public class ChestDataRepository {
             ps.setFloat(9, holoLoc.getPitch());
 
             ps.setString(10, chest.getHolographicTimerId().toString());
-            ps.setString(11, chest.getHolographicOwnerId().toString());
-            ps.setString(12, chest.getWorldName());
-            ps.setInt(13, chest.getXpStored());
-            ps.setBytes(14, ItemBytes.toBytesList(chest.getInventory()));
+            if (chest.getHolographicStatusId() == null) {
+                ps.setNull(11, Types.VARCHAR);
+            } else {
+                ps.setString(11, chest.getHolographicStatusId().toString());
+            }
+            ps.setString(12, chest.getHolographicOwnerId().toString());
+            if (chest.getKillerUUID() == null) {
+                ps.setNull(13, Types.VARCHAR);
+            } else {
+                ps.setString(13, chest.getKillerUUID().toString());
+            }
+            ps.setString(14, chest.getWorldName());
+            ps.setInt(15, chest.getXpStored());
+            ps.setBytes(16, ItemBytes.toBytesList(chest.getInventory()));
 
-            ps.setString(15, chest.getPlayerStringUUID());
-            ps.setString(16, chestLoc.getWorld().getName());
-            ps.setInt(17, chestLoc.getBlockX());
-            ps.setInt(18, chestLoc.getBlockY());
-            ps.setInt(19, chestLoc.getBlockZ());
+            ps.setString(17, chest.getPlayerStringUUID());
+            ps.setString(18, chestLoc.getWorld().getName());
+            ps.setInt(19, chestLoc.getBlockX());
+            ps.setInt(20, chestLoc.getBlockY());
+            ps.setInt(21, chestLoc.getBlockZ());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -366,8 +412,8 @@ public class ChestDataRepository {
                 "player_uuid, player_name, chest_world, chest_x, chest_y, chest_z, chest_yaw, chest_pitch, " +
                 "chest_date, is_infinity, is_removed_block, " +
                 "holo_world, holo_x, holo_y, holo_z, holo_yaw, holo_pitch, " +
-                "holographic_timer_id, holographic_owner_id, world_name, xp_stored, inventory" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "holographic_timer_id, holographic_status_id, holographic_owner_id, killer_uuid, world_name, xp_stored, inventory" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         final String checkDublicate = "SELECT player_uuid, " +
                 "chest_world, " +
                 "chest_x, " +
@@ -413,10 +459,20 @@ public class ChestDataRepository {
             ps.setFloat(17, holoLoc.getPitch());
 
             ps.setString(18, chest.getHolographicTimerId().toString());
-            ps.setString(19, chest.getHolographicOwnerId().toString());
-            ps.setString(20, chest.getWorldName());
-            ps.setInt(21, chest.getXpStored());
-            ps.setBytes(22, ItemBytes.toBytesList(chest.getInventory()));
+            if (chest.getHolographicStatusId() == null) {
+                ps.setNull(19, Types.VARCHAR);
+            } else {
+                ps.setString(19, chest.getHolographicStatusId().toString());
+            }
+            ps.setString(20, chest.getHolographicOwnerId().toString());
+            if (chest.getKillerUUID() == null) {
+                ps.setNull(21, Types.VARCHAR);
+            } else {
+                ps.setString(21, chest.getKillerUUID().toString());
+            }
+            ps.setString(22, chest.getWorldName());
+            ps.setInt(23, chest.getXpStored());
+            ps.setBytes(24, ItemBytes.toBytesList(chest.getInventory()));
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -520,7 +576,9 @@ public class ChestDataRepository {
                 rs.getBoolean("is_removed_block"),
                 holoLoc,
                 UUID.fromString(rs.getString("holographic_timer_id")),
+                rs.getString("holographic_status_id") == null ? null : UUID.fromString(rs.getString("holographic_status_id")),
                 UUID.fromString(rs.getString("holographic_owner_id")),
+                rs.getString("killer_uuid") == null ? null : UUID.fromString(rs.getString("killer_uuid")),
                 rs.getString("world_name"),
                 rs.getInt("xp_stored")
         );
@@ -552,6 +610,20 @@ public class ChestDataRepository {
                                     "ON chest_data (chest_world, chest_x, chest_y, chest_z)"
                     );
                 }
+            }
+
+            final List<String> tableColumns = new ArrayList<>();
+            try (ResultSet rs = st.executeQuery("PRAGMA table_info('chest_data')")) {
+                while (rs.next()) {
+                    tableColumns.add(rs.getString("name"));
+                }
+            }
+
+            if (!tableColumns.contains("killer_uuid")) {
+                st.executeUpdate("ALTER TABLE chest_data ADD COLUMN killer_uuid TEXT");
+            }
+            if (!tableColumns.contains("holographic_status_id")) {
+                st.executeUpdate("ALTER TABLE chest_data ADD COLUMN holographic_status_id TEXT");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

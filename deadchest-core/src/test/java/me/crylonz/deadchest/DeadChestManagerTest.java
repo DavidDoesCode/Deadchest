@@ -194,6 +194,27 @@ class DeadChestManagerTest {
     }
 
     @Test
+    void handleExpirateDeadChestNotExpiredDuringPublicLootPhase() {
+        Location loc = new Location(world, 31, 64, 40);
+        world.getBlockAt(loc).setType(Material.CHEST);
+
+        ChestData chest = mock(ChestData.class);
+        Date now = new Date(2_000_000L);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(chest.getChestDate()).thenReturn(new Date(now.getTime() - 10_000L));
+        when(chest.isInfinity()).thenReturn(false);
+        when(chest.getChestLocation()).thenReturn(loc);
+
+        ExpiredActionType result = DeadChestManager.handleExpirateDeadChest(chest, now);
+
+        assertEquals(ExpiredActionType.NOT_EXPIRED, result);
+        assertEquals(Material.CHEST, world.getBlockAt(loc).getType());
+        verify(chest, never()).removeArmorStand();
+    }
+
+    @Test
     void handleChestTickDoesNotLogExpiredChestWhenArmorStandRemovalFails() throws Exception {
         Path logPath = Path.of("plugins", "DeadChest", "deadchest.log");
         Files.deleteIfExists(logPath);
@@ -383,6 +404,178 @@ class DeadChestManagerTest {
     }
 
     @Test
+    void updateTimerUpdatesOwnerHologramForPublicPhase() {
+        DeadChestLoader.local = new Localization();
+        DeadChestLoader.local.set(new HashMap<>(Map.of(
+                "hologram.owner", "Deadchest of {0}",
+                "hologram.state.private", "PRIVATE",
+                "hologram.state.open", "OPEN",
+                "hologram.state.public", "PUBLIC",
+                "hologram.state.killer", "KILLER",
+                "hologram.state.owner", "OWNER",
+                "hologram.state.share", "SHARE",
+                "hologram.timer", "{0}:{1}:{2}",
+                "chest.infinity", "INF"
+        )));
+
+        World mockedWorld = mock(World.class);
+        Entity timerStand = mock(Entity.class);
+        Entity statusStand = mock(Entity.class);
+        Entity ownerStand = mock(Entity.class);
+        Location holoLoc = new Location(mockedWorld, 70, 65, 70);
+
+        ChestData chestData = mock(ChestData.class);
+        when(chestData.getChestLocation()).thenReturn(new Location(mockedWorld, 70, 64, 70));
+        when(chestData.getHolographicTimer()).thenReturn(holoLoc);
+        when(chestData.isChunkLoaded()).thenReturn(true);
+        when(chestData.getChestDate()).thenReturn(new Date(System.currentTimeMillis() - 10_000L));
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.getPlayerName()).thenReturn("Steve");
+
+        when(timerStand.getType()).thenReturn(EntityType.ARMOR_STAND);
+        when(timerStand.hasMetadata("deadchest")).thenReturn(true);
+        when(timerStand.getMetadata("deadchest")).thenReturn(List.of(new FixedMetadataValue(plugin, true)));
+
+        when(ownerStand.getType()).thenReturn(EntityType.ARMOR_STAND);
+        when(ownerStand.hasMetadata("deadchest")).thenReturn(true);
+        when(ownerStand.getMetadata("deadchest")).thenReturn(List.of(new FixedMetadataValue(plugin, false)));
+        when(ownerStand.hasMetadata(Utils.HOLOGRAM_LINE_KEY)).thenReturn(true);
+        when(ownerStand.getMetadata(Utils.HOLOGRAM_LINE_KEY)).thenReturn(List.of(new FixedMetadataValue(plugin, "owner")));
+
+        when(statusStand.getType()).thenReturn(EntityType.ARMOR_STAND);
+        when(statusStand.hasMetadata("deadchest")).thenReturn(true);
+        when(statusStand.getMetadata("deadchest")).thenReturn(List.of(new FixedMetadataValue(plugin, false)));
+        when(statusStand.hasMetadata(Utils.HOLOGRAM_LINE_KEY)).thenReturn(true);
+        when(statusStand.getMetadata(Utils.HOLOGRAM_LINE_KEY)).thenReturn(List.of(new FixedMetadataValue(plugin, "status")));
+
+        when(mockedWorld.getNearbyEntities(holoLoc, 1.0, 1.0, 1.0)).thenReturn(new ArrayList<>(List.of(timerStand, statusStand, ownerStand)));
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+
+        DeadChestManager.updateTimer(chestData, new Date());
+
+        verify(statusStand).setCustomName("SHARE");
+        verify(ownerStand).setCustomName("Deadchest of Steve");
+    }
+
+    @Test
+    void getAccessStateLabelUsesOpenStateWhenChestIsNotOwnerOnly() {
+        DeadChestLoader.local = new Localization();
+        DeadChestLoader.local.set(new HashMap<>(Map.of(
+                "hologram.state.private", "PRIVATE",
+                "hologram.state.open", "OPEN",
+                "hologram.state.public", "PUBLIC",
+                "hologram.state.killer", "KILLER",
+                "hologram.state.owner", "OWNER",
+                "hologram.state.share", "SHARE"
+        )));
+        when(config.getBoolean(ConfigKey.ONLY_OWNER_CAN_OPEN_CHEST)).thenReturn(false);
+
+        assertEquals("OPEN", DeadChestManager.getAccessStateLabel(null, null));
+    }
+
+    @Test
+    void getAccessStateLabelUsesPublicWhenOtherPlayersCanLoot() {
+        DeadChestLoader.local = new Localization();
+        DeadChestLoader.local.set(new HashMap<>(Map.of(
+                "hologram.state.private", "PRIVATE",
+                "hologram.state.open", "OPEN",
+                "hologram.state.public", "PUBLIC",
+                "hologram.state.killer", "KILLER",
+                "hologram.state.owner", "OWNER",
+                "hologram.state.share", "SHARE"
+        )));
+
+        ChestData chestData = mock(ChestData.class);
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.getChestDate()).thenReturn(new Date(0L));
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER)).thenReturn(true);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER)).thenReturn(true);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(true);
+
+        assertEquals("PUBLIC", DeadChestManager.getAccessStateLabel(chestData, new Date(10_000L)));
+    }
+
+    @Test
+    void getAccessStateLabelUsesKillerWhenOnlyKillerCanLoot() {
+        DeadChestLoader.local = new Localization();
+        DeadChestLoader.local.set(new HashMap<>(Map.of(
+                "hologram.state.private", "PRIVATE",
+                "hologram.state.open", "OPEN",
+                "hologram.state.public", "PUBLIC",
+                "hologram.state.killer", "KILLER",
+                "hologram.state.owner", "OWNER",
+                "hologram.state.share", "SHARE"
+        )));
+
+        ChestData chestData = mock(ChestData.class);
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.getChestDate()).thenReturn(new Date(0L));
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER)).thenReturn(false);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER)).thenReturn(true);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(false);
+
+        assertEquals("KILLER", DeadChestManager.getAccessStateLabel(chestData, new Date(10_000L)));
+    }
+
+    @Test
+    void getAccessStateLabelUsesOwnerWhenOnlyOwnerCanLoot() {
+        DeadChestLoader.local = new Localization();
+        DeadChestLoader.local.set(new HashMap<>(Map.of(
+                "hologram.state.private", "PRIVATE",
+                "hologram.state.open", "OPEN",
+                "hologram.state.public", "PUBLIC",
+                "hologram.state.killer", "KILLER",
+                "hologram.state.owner", "OWNER",
+                "hologram.state.share", "SHARE"
+        )));
+
+        ChestData chestData = mock(ChestData.class);
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.getChestDate()).thenReturn(new Date(0L));
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER)).thenReturn(true);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER)).thenReturn(false);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(false);
+
+        assertEquals("OWNER", DeadChestManager.getAccessStateLabel(chestData, new Date(10_000L)));
+    }
+
+    @Test
+    void getAccessStateLabelUsesShareForMixedRestrictedPublicAccess() {
+        DeadChestLoader.local = new Localization();
+        DeadChestLoader.local.set(new HashMap<>(Map.of(
+                "hologram.state.private", "PRIVATE",
+                "hologram.state.open", "OPEN",
+                "hologram.state.public", "PUBLIC",
+                "hologram.state.killer", "KILLER",
+                "hologram.state.owner", "OWNER",
+                "hologram.state.share", "SHARE"
+        )));
+
+        ChestData chestData = mock(ChestData.class);
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.getChestDate()).thenReturn(new Date(0L));
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER)).thenReturn(false);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER)).thenReturn(false);
+        when(config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS)).thenReturn(false);
+
+        assertEquals("SHARE", DeadChestManager.getAccessStateLabel(chestData, new Date(10_000L)));
+    }
+
+    @Test
     void handleChestTickKeepsChestTrackedWhenArmorStandRemovalFails() {
         Location loc = new Location(world, 62, 64, 62);
         world.getBlockAt(loc).setType(Material.CHEST);
@@ -409,6 +602,60 @@ class DeadChestManagerTest {
         verify(chestData, never()).remove();
     }
 
+    @Test
+    void handleChestTickKeepsChestTrackedDuringPublicLootPhase() {
+        Location loc = new Location(world, 63, 64, 63);
+        world.getBlockAt(loc).setType(Material.CHEST);
+
+        ChestData chestData = mock(ChestData.class);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(30);
+        when(chestData.getChestLocation()).thenReturn(loc);
+        when(chestData.getHolographicTimer()).thenReturn(new Location(world, 63, 65, 63));
+        when(chestData.getChestDate()).thenReturn(new Date(5_000L));
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.isChunkLoaded()).thenReturn(false);
+        when(chestData.getPlayerName()).thenReturn("Steve");
+        when(chestData.getPlayerUUID()).thenReturn(UUID.randomUUID());
+
+        DeadChestLoader.getChestDataCache().addChestData(chestData);
+
+        DeadChestManager.handleChestTick(chestData, new Date(10_000L));
+
+        assertFalse(DeadChestLoader.getChestDataCache().isEmpty());
+        assertEquals(Material.CHEST, world.getBlockAt(loc).getType());
+        verify(chestData, never()).update(any());
+    }
+
+    @Test
+    void handleChestTickRemovesChestAfterPublicLootPhaseExpires() {
+        Location loc = new Location(world, 64, 64, 64);
+        world.getBlockAt(loc).setType(Material.CHEST);
+
+        ChestData chestData = mock(ChestData.class);
+        when(config.getInt(ConfigKey.DEADCHEST_DURATION)).thenReturn(1);
+        when(config.getBoolean(ConfigKey.LOOT_ENABLED)).thenReturn(true);
+        when(config.getInt(ConfigKey.LOOT_PUBLIC_DURATION)).thenReturn(5);
+        when(config.getBoolean(ConfigKey.LOOT_DROP_ITEMS_ON_TIMEOUT)).thenReturn(false);
+        when(chestData.getChestLocation()).thenReturn(loc);
+        when(chestData.getHolographicTimer()).thenReturn(new Location(world, 64, 65, 64));
+        when(chestData.getChestDate()).thenReturn(new Date(0L));
+        when(chestData.isInfinity()).thenReturn(false);
+        when(chestData.isRemovedBlock()).thenReturn(false);
+        when(chestData.isChunkLoaded()).thenReturn(false);
+        when(chestData.removeArmorStand()).thenReturn(true);
+        when(chestData.getPlayerName()).thenReturn("Steve");
+        when(chestData.getPlayerUUID()).thenReturn(UUID.randomUUID());
+
+        DeadChestLoader.getChestDataCache().addChestData(chestData);
+
+        DeadChestManager.handleChestTick(chestData, new Date(10_000L));
+
+        assertTrue(DeadChestLoader.getChestDataCache().isEmpty());
+        assertEquals(Material.AIR, world.getBlockAt(loc).getType());
+    }
+
     private ChestData chestDataAt(int x, String playerName, UUID playerId, boolean infinity) {
         UUID timerId = UUID.nameUUIDFromBytes(("timer-" + x).getBytes());
         UUID ownerId = UUID.nameUUIDFromBytes(("owner-" + x).getBytes());
@@ -430,6 +677,7 @@ class DeadChestManagerTest {
                 holoLocation,
                 timerId,
                 ownerId,
+                null,
                 world.getName(),
                 0
         );

@@ -25,6 +25,7 @@ import static me.crylonz.deadchest.DeadChestLoader.*;
 import static me.crylonz.deadchest.DeadChestManager.generateHologram;
 
 public class Utils {
+    public static final String HOLOGRAM_LINE_KEY = "deadchest-line";
 
 
     public static void generateLog(String message) {
@@ -135,13 +136,25 @@ public class Utils {
     }
 
     public static ArmorStand[] createHolograms(Block block, String deathDisplayName) {
+        String statusLine = local.get("hologram.loading");
+        ArmorStand holoStatus = generateHologram(block.getLocation(), statusLine, 0.5f, -0.85f, 0.5f, false);
+        if (holoStatus != null) {
+            holoStatus.setMetadata(HOLOGRAM_LINE_KEY, new FixedMetadataValue(plugin, "status"));
+        }
+
         String firstLine = local.format("hologram.owner", deathDisplayName);
-        ArmorStand holoName = generateHologram(block.getLocation(), firstLine, 0.5f, -0.95f, 0.5f, false);
+        ArmorStand holoName = generateHologram(block.getLocation(), firstLine, 0.5f, -1.05f, 0.5f, false);
+        if (holoName != null) {
+            holoName.setMetadata(HOLOGRAM_LINE_KEY, new FixedMetadataValue(plugin, "owner"));
+        }
 
         String secondLine = local.get("hologram.loading");
-        ArmorStand holoTime = generateHologram(block.getLocation(), secondLine, 0.5f, -1.2f, 0.5f, true);
+        ArmorStand holoTime = generateHologram(block.getLocation(), secondLine, 0.5f, -1.25f, 0.5f, true);
+        if (holoTime != null) {
+            holoTime.setMetadata(HOLOGRAM_LINE_KEY, new FixedMetadataValue(plugin, "timer"));
+        }
 
-        return new ArmorStand[]{holoTime, holoName};
+        return new ArmorStand[]{holoTime, holoStatus, holoName};
     }
 }
 

@@ -18,11 +18,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import static me.crylonz.deadchest.DeadChestLoader.config;
 import static me.crylonz.deadchest.DeadChestLoader.local;
+import static me.crylonz.deadchest.DeadChestManager.isPublicLootPhase;
 import static me.crylonz.deadchest.utils.Utils.generateLog;
 import static me.crylonz.deadchest.utils.Utils.isGraveBlock;
 
@@ -91,10 +93,27 @@ public class ClickListener implements Listener {
      * Checks if the player has the right to open the chest
      */
     private boolean canOpenChest(ChestData cd, Player player, UUID playerUUID, boolean hasPerm) {
+        if (isPublicLootPhase(cd, new Date())) return isPublicLootAccessible(cd, playerUUID);
         if (!config.getBoolean(ConfigKey.ONLY_OWNER_CAN_OPEN_CHEST)) return true;
         if (playerUUID.equals(cd.getPlayerUUID())) return true;
         if (hasPerm) return true;
         return false;
+    }
+
+    private boolean isPublicLootAccessible(ChestData chestData, UUID playerUUID) {
+        if (chestData == null || playerUUID == null || !isPublicLootPhase(chestData, new Date())) {
+            return false;
+        }
+
+        if (playerUUID.equals(chestData.getPlayerUUID())) {
+            return config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER);
+        }
+
+        if (playerUUID.equals(chestData.getKillerUUID())) {
+            return config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER);
+        }
+
+        return config.getBoolean(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS);
     }
 
     /**

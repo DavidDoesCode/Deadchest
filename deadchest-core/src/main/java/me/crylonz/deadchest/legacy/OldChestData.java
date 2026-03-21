@@ -240,6 +240,7 @@ public final class OldChestData implements ConfigurationSerializable {
                                 oldChestData.isRemovedBlock(),
                                 oldChestData.getHolographicTimer(),
                                 oldChestData.getHolographicTimerId(),
+                                null,
                                 oldChestData.getHolographicOwnerId(),
                                 oldChestData.getWorldName(),
                                 oldChestData.getXpStored()

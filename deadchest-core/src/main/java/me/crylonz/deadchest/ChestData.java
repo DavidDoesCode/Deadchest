@@ -25,7 +25,9 @@ public final class ChestData {
     private boolean isRemovedBlock;
     private Location holographicTimer;
     private UUID holographicTimerId;
+    private UUID holographicStatusId;
     private UUID holographicOwnerId;
+    private UUID killerUUID;
     private String worldName;
 
     private int xpStored;
@@ -40,7 +42,9 @@ public final class ChestData {
         this.isInfinity = chest.isInfinity();
         this.holographicTimer = chest.getHolographicTimer();
         this.holographicTimerId = chest.getHolographicTimerId();
+        this.holographicStatusId = chest.getHolographicStatusId();
         this.holographicOwnerId = chest.getHolographicOwnerId();
+        this.killerUUID = chest.getKillerUUID();
         this.worldName = chest.getWorldName();
         this.xpStored = chest.getXpStored();
     }
@@ -63,7 +67,9 @@ public final class ChestData {
             this.isRemovedBlock = false;
             this.holographicTimer = asTimer.getLocation().clone();
             this.holographicTimerId = asTimer.getUniqueId();
+            this.holographicStatusId = null;
             this.holographicOwnerId = owner.getUniqueId();
+            this.killerUUID = p.getKiller() == null ? null : p.getKiller().getUniqueId();
             this.xpStored = xpToStore;
             if (chestLocation.getWorld() != null)
                 this.worldName = chestLocation.getWorld().getName();
@@ -79,7 +85,25 @@ public final class ChestData {
                      final boolean isRemovedBlock,
                      final Location holographicTimer,
                      final UUID asTimerId,
+                     final UUID asStatusId,
                      final UUID asOwnerId,
+                     final String worldName,
+                     final int xpStored) {
+        this(inventory, chestLocation, playerName, playerUUID, chestDate, isInfinity, isRemovedBlock, holographicTimer, asTimerId, asStatusId, asOwnerId, null, worldName, xpStored);
+    }
+
+    public ChestData(final List<ItemStack> inventory,
+                     final Location chestLocation,
+                     final String playerName,
+                     final UUID playerUUID,
+                     final Date chestDate,
+                     final boolean isInfinity,
+                     final boolean isRemovedBlock,
+                     final Location holographicTimer,
+                     final UUID asTimerId,
+                     final UUID asStatusId,
+                     final UUID asOwnerId,
+                     final UUID killerUUID,
                      final String worldName,
                      final int xpStored) {
         this.inventory = inventory;
@@ -91,7 +115,9 @@ public final class ChestData {
         this.isInfinity = isInfinity;
         this.holographicTimer = holographicTimer;
         this.holographicTimerId = asTimerId;
+        this.holographicStatusId = asStatusId;
         this.holographicOwnerId = asOwnerId;
+        this.killerUUID = killerUUID;
         this.worldName = worldName;
         this.xpStored = xpStored;
     }
@@ -104,8 +130,16 @@ public final class ChestData {
         return holographicOwnerId;
     }
 
+    public UUID getHolographicStatusId() {
+        return holographicStatusId;
+    }
+
     public void setHolographicOwnerId(UUID holographicOwnerId) {
         this.holographicOwnerId = holographicOwnerId;
+    }
+
+    public void setHolographicStatusId(UUID holographicStatusId) {
+        this.holographicStatusId = holographicStatusId;
     }
 
     public void setHolographicTimerId(UUID holographicTimerId) {
@@ -164,6 +198,14 @@ public final class ChestData {
         return worldName;
     }
 
+    public UUID getKillerUUID() {
+        return killerUUID;
+    }
+
+    public void setKillerUUID(UUID killerUUID) {
+        this.killerUUID = killerUUID;
+    }
+
     public boolean removeArmorStand() {
         final int radius = 1;
         final int armorStandShiftY = 1;
@@ -190,7 +232,9 @@ public final class ChestData {
 
             boolean isEmpty = entities.size() > 0;
             for (Entity entity : entities) {
-                if (entity.getUniqueId().equals(holographicOwnerId) || entity.getUniqueId().equals(holographicTimerId)) {
+                if (entity.getUniqueId().equals(holographicOwnerId)
+                        || entity.getUniqueId().equals(holographicTimerId)
+                        || entity.getUniqueId().equals(holographicStatusId)) {
                     entity.remove();
                 }
             }

@@ -276,6 +276,7 @@ class InMemoryChestStoreTest {
                 false,
                 holoLocation,
                 timerId,
+                null,
                 ownerId,
                 world.getName(),
                 0
