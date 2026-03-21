@@ -1,4 +1,120 @@
-## Deadchest 4.11
+## Deadchest 4.28.0 - 2026-03-21
+
++ Added a two-phase loot system with a private phase (`chest.duration-seconds`) and an optional public loot phase (`chest.loot.*`)
++ Added configurable public-phase access rules for owner, killer, and other players
++ Added public-phase expiration handling with dedicated timeout behavior
++ Added a dedicated hologram status line above the owner name
++ Added Minecraft-friendly hologram states: `PRIVATE`, `OPEN`, `PUBLIC`, `KILLER`, `OWNER`, and `SHARE`
+
+## Deadchest 4.27.0 - 2026-03-16
+
++ Fixed log spam on deadchest expiration
+
+## Deadchest 4.26.0 - 2026-03-14
+
++ Added Folia support !
++ Reworked ignored items to feel more consistent between the config and the in-game `/dc ignore` menu.
++ Improved support for custom items, making advanced setups easier to manage.
+
+## Deadchest 4.25.0 - 2026-03-10
+
++ YAML Configuration Overhaul
+The config.yml structure has been fully reorganized for better clarity and easier maintenance.
+Settings are now grouped into clear sections (localization, visuals, sound, gameplay, permissions, etc.).
+This makes customization faster and reduces configuration mistakes.
+
++ Localization System Upgrade
+The localization system has been redesigned to be cleaner and more consistent across the plugin.
+Built-in languages: en, fr, es, de, it, pl, pt-br, zh-cn.
+Migration from legacy localization/config systems is handled automatically, so existing setups are updated without manual conversion.
+
++ DeadChest Visual Customization
+Added configurable standing chest effects (style, radius, speed, enable/disable).
+Added configurable pickup animation (particle type, count, spread, speed, vertical offset).
+Added configurable pickup sound (enable/disable, sound name, volume, pitch).
+
+## Deadchest 4.24.0 - 2026-02-28
+
+- Fixed SQLite persistence for DeadChests to prevent some incomplete saves/updates.
+- Fixed updates of existing DeadChests for more reliable data consistency.
+- Fixed batch save/remove behavior to avoid database inconsistencies.
+- Improved startup data recovery so DeadChests reload more reliably after server restart.
+
+- Fixed and improved WorldGuard integration (more consistent owner/member/guest flag handling).
+- Added robustness improvements to avoid certain crashes when data is missing.
+
+- Internal cleanup and consistency improvements in the DeadChest persistence flow.
+
+
+## Deadchest 4.23.0 - 2025-09-15
+
++ Performance & stability update
++ All chests are stored in a dedicated SQLite database instead of a large `ChestData.yml` file
++ Data processing runs on a separate thread, reducing lag spikes
++ Existing `ChestData.yml` data is migrated automatically on update
++ In case of migration issues, you can stay on `v4.22.2` or run `/dc removeall` before switching to `v4.23.0`
+
+## Deadchest 4.22.2 - 2025-08-20
+
++ Improved code quality and overall performance
++ Fixed an issue where a player carrying only ignored items would still generate an empty DeadChest
++ Corrected plugin name display: restored from Deadchest back to DeadChest
+
+## Deadchest 4.22.1 - 2025-08-13
+
+- Improved death handling in lava
+- Minor performance optimizations
+- Fixed console error when opening inventory on Minecraft versions below 1.21
+
+## Deadchest 4.22.0 - 2025-08-10
+
+
+## Deadchest 4.21.1 - 2024-07-04
+
+
+## Deadchest 4.21.0 - 2024-05-29
+
+
+## Deadchest 4.20.0 - 2024-04-14
+
+
+## Deadchest 4.19.1 - 2024-03-28
+
+
+## Deadchest 4.19.0 - 2024-02-22
+
+
+## Deadchest 4.18.0 - 2024-02-01
+
++ Added the `item-durability-loss-on-death` option to apply durability loss when a player dies
++ Optimized the plugin file size to be lighter
+
+## Deadchest 4.17.0 - 2023-10-29
+
+
+## Deadchest 4.16.1 - 2023-07-23
+
+
+## Deadchest 4.16.0 - 2023-05-10
+
+
+## Deadchest 4.15.0 - 2023-03-21
+
+
+## Deadchest 4.14.0 - 2023-02-04
+
+
+## Deadchest 4.13.0 - 2022-11-22
+
+
+## Deadchest 4.12.1 - 2022-09-22
+
+
+## Deadchest 4.12.0 - 2022-09-17
+
++ Fixing Deadchest not working on restart
+
+## Deadchest 4.11.0 - 2022-09-03
 
 + Adding auto-updater
 + Code change : Update configuration code
@@ -7,7 +123,7 @@
 + Add force option to /dc repair
 + Potentially fixing chunk keeping loading for no reason
 
-## Deadchest 4.10
+## Deadchest 4.10.0 - 2022-06-21
 
 + Fixing all performance issue
 
@@ -71,6 +187,10 @@ BUG FIX :
 **BugFix**
 
 + Fix netherite stuff error with Minecraft lower than 1.16
+
+## Deadchest 4.5.1 - 2021-05-21
+
++ Fix saving issue in particular cases
 
 ## Deadchest 4.5.0
 
