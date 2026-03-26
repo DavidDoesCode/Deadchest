@@ -23,7 +23,7 @@ This page documents the current `/dc` commands and permission nodes.
 | `/dc config get <path>` | `deadchest.config`       | Read a config value using its canonical YAML path.                           |
 | `/dc config set <path> <value>` | `deadchest.config` | Update a config value using its canonical YAML path.                         |
 | `/dc config reset <path>` | `deadchest.config`     | Reset a config value to its default.                                         |
-| `/dc config edit <path>` | `deadchest.config`      | Open an interactive editor for supported paths.                              |
+| `/dc config edit <path>` | `deadchest.config`      | Open an interactive editor for supported paths (`filters.ignored-items` only, player-only). |
 | `/dc ignore`            | `deadchest.admin`        | Deprecated alias for `/dc config edit filters.ignored-items`.                |
 
 \* `deadchest.list.own` is only required when `permissions.require-list-own: true` in `config.yml`.
@@ -61,10 +61,15 @@ The following config flags control whether some actions require permissions:
 
 `/dc ignore` is still available for compatibility, but it is deprecated.
 
+Console behavior:
+
+- `/dc config`, `/dc config get`, `/dc config set`, and `/dc config reset` can be executed from the server console.
+- `/dc config edit` and `/dc ignore` are player-only because they open a GUI.
+
 `/dc config edit filters.ignored-items` and `/dc ignore` edit `filters.ignored-items` from `config.yml` directly:
 
 - `filters.ignored-items` ignores by `Material` name.
-- `/dc config edit filters.ignored-items` updates the same YAML list through a GUI.
+- `/dc config edit filters.ignored-items` is the only currently supported interactive config editor and updates the same YAML list through a GUI.
 - `/dc ignore` points to that same editor for backward compatibility.
 - Custom items are stored there as serialized `ItemStack` entries, including item meta.
 - Ignored items are skipped by DeadChest storage and keep their default death behavior.

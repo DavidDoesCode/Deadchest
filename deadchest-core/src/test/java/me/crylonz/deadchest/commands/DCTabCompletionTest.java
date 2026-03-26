@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,5 +101,21 @@ class DCTabCompletionTest {
 
         assertTrue(suggestions.contains("en"));
         assertTrue(suggestions.contains("fr"));
+    }
+
+    @Test
+    void configEditOnlySuggestsInteractiveKeys() {
+        PlayerMock admin = server.addPlayer("ConfigMod");
+        admin.addAttachment(MockBukkit.createMockPlugin(), Permission.CONFIG.label, true);
+
+        List<String> suggestions = tabCompletion.onTabComplete(
+                admin,
+                dcCommand,
+                "dc",
+                new String[]{"config", "edit", ""}
+        );
+
+        assertEquals(List.of("filters.ignored-items"), suggestions);
+        assertFalse(suggestions.contains("localization.language"));
     }
 }

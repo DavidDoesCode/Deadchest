@@ -80,7 +80,11 @@ public class DCTabCompletion implements TabCompleter {
         }
 
         if (args.length == 3) {
-            list.addAll(DCConfigCommandSupport.keys());
+            if (DCConfigCommandSupport.ACTION_EDIT.equalsIgnoreCase(args[1])) {
+                list.addAll(DCConfigCommandSupport.interactiveEditKeys());
+            } else {
+                list.addAll(DCConfigCommandSupport.keys());
+            }
             return filterSuggestions(args[2]);
         }
 

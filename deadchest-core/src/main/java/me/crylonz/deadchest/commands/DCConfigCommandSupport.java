@@ -30,6 +30,14 @@ final class DCConfigCommandSupport {
                 .collect(Collectors.toList());
     }
 
+    static List<String> interactiveEditKeys() {
+        return Arrays.stream(ConfigKey.values())
+                .filter(ConfigKey::supportsInteractiveEdit)
+                .map(ConfigKey::canonicalPath)
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
     static ConfigKey resolveKey(String rawPath) {
         if (rawPath == null) {
             return null;

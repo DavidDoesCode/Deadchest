@@ -8,6 +8,11 @@ DeadChest now uses a structured `config.yml` (schema version `2`) since `v5.0.0`
 `/dc config set` and `/dc config reset` apply changes immediately.
 If you edit `config.yml` manually, run `/dc reload`.
 
+Console behavior:
+
+- `/dc config`, `/dc config get`, `/dc config set`, and `/dc config reset` can be executed from the server console.
+- `/dc config edit` is player-only because it opens a GUI.
+
 ### Global
 
 | Key              | Type    | Default | Description                   |
@@ -173,6 +178,8 @@ The access-state line reflects both the private/public phase and the configured 
 - `/dc config set filters.excluded-worlds world,world_nether`
 - `/dc config reset visuals.sound.pickup.name`
 - `/dc config edit filters.ignored-items`
+
+`/dc config edit` currently supports only `filters.ignored-items`.
 
 `filters.ignored-items`, `/dc config edit filters.ignored-items`, and deprecated `/dc ignore` use the same source of truth:
 
