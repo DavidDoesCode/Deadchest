@@ -5,6 +5,7 @@ import me.crylonz.deadchest.DeadChestLoader;
 import me.crylonz.deadchest.Permission;
 import me.crylonz.deadchest.db.InMemoryChestStore;
 import me.crylonz.deadchest.utils.ConfigKey;
+import me.crylonz.deadchest.utils.PermissionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
@@ -29,12 +30,7 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
 
     public void registerReload() {
         registerCommand("dc reload", Permission.ADMIN.label, () -> {
-            DeadChestLoader.plugin.reloadConfig();
-            plugin.registerConfig();
-            local.reloadLanguage(config.getString(ConfigKey.LOCALIZATION_LANGUAGE));
-            ignoreList = Bukkit.createInventory(new me.crylonz.deadchest.IgnoreInventoryHolder(), 36, local.get("gui.ignore-list.title"));
-            loadIgnoreIntoInventoryFromConfig(ignoreList);
-
+            reloadPluginConfiguration();
             sender.sendMessage(local.prefixed("commands.reload.success"));
         });
     }
@@ -275,8 +271,141 @@ public class DCCommandRegistrationService extends DCCommandRegistration {
     }
 
     public void registerIgnoreList() {
-        registerCommand("dc ignore ", Permission.ADMIN.label, () ->
-                getSchedulerAdapter().executeForEntity(player, () -> player.openInventory(ignoreList))
-        );
+        registerCommand("dc ignore", Permission.ADMIN.label, () -> {
+            sender.sendMessage(local.prefixed("commands.config.deprecated.ignore"));
+            openIgnoredItemsEditor();
+        });
+    }
+
+    public void registerConfigOverview() {
+        registerCommand("dc config", null, () -> {
+            if (!ensureConfigPermission()) {
+                return;
+            }
+            sender.sendMessage(local.prefixed("commands.config.usage"));
+        });
+    }
+
+    public void registerConfigGet() {
+        registerCommand("dc config get {1}", null, () -> {
+            if (!ensureConfigPermission()) {
+                return;
+            }
+            ConfigKey key = requireConfigKey(args[2]);
+            if (key == null) {
+                return;
+            }
+
+            sender.sendMessage(local.prefixed(
+                    "commands.config.get.success",
+                    key.canonicalPath(),
+                    DCConfigCommandSupport.formatValue(config.getValue(key))
+            ));
+        });
+    }
+
+    public void registerConfigSet() {
+        registerCommand("dc config set {1} {2}", null, () -> {
+            if (!ensureConfigPermission()) {
+                return;
+            }
+            ConfigKey key = requireConfigKey(args[2]);
+            if (key == null) {
+                return;
+            }
+
+            try {
+                DCConfigCommandSupport.ParsedConfigValue parsed = DCConfigCommandSupport.parseValue(key, args[3]);
+                config.setValue(key, parsed.value());
+                reloadPluginConfiguration();
+                sender.sendMessage(local.prefixed(
+                        "commands.config.set.success",
+                        key.canonicalPath(),
+                        parsed.displayValue()
+                ));
+            } catch (IllegalArgumentException ignored) {
+                sender.sendMessage(local.prefixed(
+                        "commands.config.error.invalid-value",
+                        key.canonicalPath(),
+                        args[3],
+                        DCConfigCommandSupport.expectedValueDescription(key)
+                ));
+            }
+        });
+    }
+
+    public void registerConfigReset() {
+        registerCommand("dc config reset {1}", null, () -> {
+            if (!ensureConfigPermission()) {
+                return;
+            }
+            ConfigKey key = requireConfigKey(args[2]);
+            if (key == null) {
+                return;
+            }
+
+            config.resetValue(key);
+            reloadPluginConfiguration();
+            sender.sendMessage(local.prefixed(
+                    "commands.config.reset.success",
+                    key.canonicalPath(),
+                    DCConfigCommandSupport.formatValue(config.getValue(key))
+            ));
+        });
+    }
+
+    public void registerConfigEdit() {
+        registerCommand("dc config edit {1}", null, () -> {
+            if (!ensureConfigPermission()) {
+                return;
+            }
+            ConfigKey key = requireConfigKey(args[2]);
+            if (key == null) {
+                return;
+            }
+
+            if (!key.supportsInteractiveEdit()) {
+                sender.sendMessage(local.prefixed("commands.config.edit.unsupported", key.canonicalPath()));
+                return;
+            }
+
+            openIgnoredItemsEditor();
+        });
+    }
+
+    private ConfigKey requireConfigKey(String rawPath) {
+        ConfigKey key = DCConfigCommandSupport.resolveKey(rawPath);
+        if (key == null) {
+            sender.sendMessage(local.prefixed("commands.config.error.unknown-key", rawPath));
+        }
+        return key;
+    }
+
+    private boolean ensureConfigPermission() {
+        if (player == null) {
+            return true;
+        }
+        if (PermissionUtils.hasAdminOr(player, Permission.CONFIG)) {
+            return true;
+        }
+        sender.sendMessage(local.prefixed("commands.error.no-permission"));
+        return false;
+    }
+
+    private void reloadPluginConfiguration() {
+        DeadChestLoader.plugin.reloadConfig();
+        plugin.registerConfig();
+        local.reloadLanguage(config.getString(ConfigKey.LOCALIZATION_LANGUAGE));
+        ignoreList = Bukkit.createInventory(new me.crylonz.deadchest.IgnoreInventoryHolder(), 36, local.get("gui.ignore-list.title"));
+        loadIgnoreIntoInventoryFromConfig(ignoreList);
+    }
+
+    private void openIgnoredItemsEditor() {
+        if (player == null) {
+            sender.sendMessage(local.prefixed("commands.error.player-only"));
+            return;
+        }
+
+        getSchedulerAdapter().executeForEntity(player, () -> player.openInventory(ignoreList));
     }
 }

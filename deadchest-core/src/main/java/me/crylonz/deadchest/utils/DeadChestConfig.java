@@ -30,6 +30,10 @@ public class DeadChestConfig {
 
     }
 
+    public void register(ConfigKey key) {
+        register(key.toString(), key.defaultValue());
+    }
+
     public Boolean getBoolean(ConfigKey key) {
         return toBoolean(configData.get(key.toString()));
     }
@@ -58,6 +62,10 @@ public class DeadChestConfig {
         return value == null ? "" : String.valueOf(value);
     }
 
+    public Object getValue(ConfigKey key) {
+        return configData.get(key.toString());
+    }
+
     public List<Object> getIgnoredEntries() {
         Object value = configData.get(ConfigKey.IGNORED_ITEMS.toString());
         if (value instanceof List<?>) {
@@ -71,6 +79,17 @@ public class DeadChestConfig {
         plugin.getConfig().set(ConfigKey.IGNORED_ITEMS.toString(), normalizedEntries);
         plugin.saveConfig();
         configData.put(ConfigKey.IGNORED_ITEMS.toString(), normalizedEntries);
+    }
+
+    public void setValue(ConfigKey key, Object value) {
+        Object normalizedValue = normalizeValue(value, key.defaultValue(), key);
+        plugin.getConfig().set(key.toString(), normalizedValue);
+        plugin.saveConfig();
+        configData.put(key.toString(), normalizedValue);
+    }
+
+    public void resetValue(ConfigKey key) {
+        setValue(key, key.defaultValue());
     }
 
     private Object resolveFromConfig(String canonicalPath) {

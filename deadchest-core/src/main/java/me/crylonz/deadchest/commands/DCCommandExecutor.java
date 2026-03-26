@@ -33,6 +33,11 @@ public class DCCommandExecutor implements CommandExecutor {
         commandRegistration.registerListOwn();          // dc list
         commandRegistration.registerListOther();        // dc list all | <PlayerName>
         commandRegistration.registerGiveBack();         // dc giveback <PlayerName>
+        commandRegistration.registerConfigOverview();   // dc config
+        commandRegistration.registerConfigGet();        // dc config get <path>
+        commandRegistration.registerConfigSet();        // dc config set <path> <value>
+        commandRegistration.registerConfigReset();      // dc config reset <path>
+        commandRegistration.registerConfigEdit();       // dc config edit <path>
         commandRegistration.registerIgnoreList();       // dc ignore
 
         if (!commandRegistration.isCommandSucceed()) {
