@@ -49,7 +49,7 @@ public class ExplosionListener implements Listener {
                 final ChestData chestData = inMemoryChestStore.getChestData(block.getLocation());
 
                 if (chestData != null) {
-                    if (config.getBoolean(ConfigKey.INDESTRUCTIBLE_CHEST)) {
+                    if (shouldProtectFromExplosion(e)) {
                         blocklist.remove(block);
                         generateLog("Deadchest of [" + chestData.getPlayerName() + "] was protected from explosion in " + Objects.requireNonNull(chestData.getChestLocation().getWorld()).getName());
                     } else {
@@ -59,5 +59,14 @@ public class ExplosionListener implements Listener {
                 }
             }
         }
+    }
+
+    private boolean shouldProtectFromExplosion(Event event) {
+        if (config.getBoolean(ConfigKey.INDESTRUCTIBLE_CHEST)) {
+            return true;
+        }
+
+        return event instanceof EntityExplodeEvent
+                && ((EntityExplodeEvent) event).getEntityType().name().equalsIgnoreCase("WIND_CHARGE");
     }
 }

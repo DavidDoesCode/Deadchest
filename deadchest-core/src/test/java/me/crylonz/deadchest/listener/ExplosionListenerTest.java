@@ -101,6 +101,27 @@ class ExplosionListenerTest {
     }
 
     @Test
+    void testWindChargeExplosion_DestructibleChestIsStillProtected() {
+        BlockMock chestBlock = world.getBlockAt(3, 64, 3);
+        chestBlock.setType(Material.CHEST);
+
+        ChestData cd = createMockChestAt(chestBlock);
+
+        when(DeadChestLoader.config.getBoolean(ConfigKey.INDESTRUCTIBLE_CHEST)).thenReturn(false);
+
+        org.bukkit.entity.Entity windCharge = world.spawnEntity(chestBlock.getLocation(), EntityType.WIND_CHARGE);
+        List<org.bukkit.block.Block> explodedBlocks = new ArrayList<>();
+        explodedBlocks.add(chestBlock);
+
+        EntityExplodeEvent event = new EntityExplodeEvent(windCharge, chestBlock.getLocation(), explodedBlocks, 1.0f);
+        listener.onEntityExplodeEvent(event);
+
+        assertFalse(event.blockList().contains(chestBlock), "Wind charge should not break a deadchest");
+        assertTrue(deadChest.contains(cd), "ChestData should remain when the explosion comes from a wind charge");
+        verify(cd, never()).removeArmorStand();
+    }
+
+    @Test
     void testBlockExplosion_IndestructibleChest() {
         BlockMock chestBlock = world.getBlockAt(1, 64, 1);
         chestBlock.setType(Material.CHEST);
