@@ -66,7 +66,10 @@ public class ExplosionListener implements Listener {
             return true;
         }
 
-        return event instanceof EntityExplodeEvent
-                && ((EntityExplodeEvent) event).getEntityType().name().equalsIgnoreCase("WIND_CHARGE");
+        if (event instanceof EntityExplodeEvent) {
+            EntityExplodeEvent explodeEvent = (EntityExplodeEvent) event;
+            return explodeEvent.getEntityType().name().equals("WIND_CHARGE");
+        }
+        return false;
     }
 }
