@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +46,7 @@ class DCTabCompletionTest {
         assertTrue(suggestions.contains("removeall"));
         assertTrue(suggestions.contains("repair"));
         assertTrue(suggestions.contains("ignore"));
+        assertTrue(suggestions.contains("config"));
     }
 
     @Test
@@ -72,5 +73,49 @@ class DCTabCompletionTest {
         assertTrue(suggestions.contains("all"));
         assertTrue(suggestions.contains("Steve"));
     }
-}
 
+    @Test
+    void configActionSuggestionsExposeStructuredCommands() {
+        PlayerMock admin = server.addPlayer("ConfigMod");
+        admin.addAttachment(MockBukkit.createMockPlugin(), Permission.CONFIG.label, true);
+
+        List<String> suggestions = tabCompletion.onTabComplete(admin, dcCommand, "dc", new String[]{"config", ""});
+
+        assertTrue(suggestions.contains("get"));
+        assertTrue(suggestions.contains("set"));
+        assertTrue(suggestions.contains("reset"));
+        assertTrue(suggestions.contains("edit"));
+    }
+
+    @Test
+    void configValueSuggestionsFollowConfigKeyMetadata() {
+        PlayerMock admin = server.addPlayer("ConfigMod");
+        admin.addAttachment(MockBukkit.createMockPlugin(), Permission.CONFIG.label, true);
+
+        List<String> suggestions = tabCompletion.onTabComplete(
+                admin,
+                dcCommand,
+                "dc",
+                new String[]{"config", "set", "localization.language", ""}
+        );
+
+        assertTrue(suggestions.contains("en"));
+        assertTrue(suggestions.contains("fr"));
+    }
+
+    @Test
+    void configEditOnlySuggestsInteractiveKeys() {
+        PlayerMock admin = server.addPlayer("ConfigMod");
+        admin.addAttachment(MockBukkit.createMockPlugin(), Permission.CONFIG.label, true);
+
+        List<String> suggestions = tabCompletion.onTabComplete(
+                admin,
+                dcCommand,
+                "dc",
+                new String[]{"config", "edit", ""}
+        );
+
+        assertEquals(List.of("filters.ignored-items"), suggestions);
+        assertFalse(suggestions.contains("localization.language"));
+    }
+}

@@ -165,58 +165,9 @@ public class DeadChestLoader {
     }
 
     public void registerConfig() {
-        config.register(ConfigKey.AUTO_UPDATE.toString(), true);
-        config.register(ConfigKey.INDESTRUCTIBLE_CHEST.toString(), true);
-        config.register(ConfigKey.ONLY_OWNER_CAN_OPEN_CHEST.toString(), true);
-        config.register(ConfigKey.DEADCHEST_DURATION.toString(), 300);
-        config.register(ConfigKey.MAX_DEAD_CHEST_PER_PLAYER.toString(), 15);
-        config.register(ConfigKey.LOG_DEADCHEST_ON_CONSOLE.toString(), false);
-        config.register(ConfigKey.REQUIRE_PERMISSION_TO_GENERATE.toString(), false);
-        config.register(ConfigKey.REQUIRE_PERMISSION_TO_GET_CHEST.toString(), false);
-        config.register(ConfigKey.REQUIRE_PERMISSION_TO_LIST_OWN.toString(), false);
-        config.register(ConfigKey.AUTO_CLEANUP_ON_START.toString(), false);
-        config.register(ConfigKey.GENERATE_DEADCHEST_IN_CREATIVE.toString(), true);
-        config.register(ConfigKey.DISPLAY_POSITION_ON_DEATH.toString(), true);
-        config.register(ConfigKey.ITEMS_DROPPED_AFTER_TIMEOUT.toString(), false);
-        config.register(ConfigKey.LOOT_ENABLED.toString(), false);
-        config.register(ConfigKey.LOOT_PUBLIC_DURATION.toString(), 300);
-        config.register(ConfigKey.LOOT_DROP_ITEMS_ON_TIMEOUT.toString(), false);
-        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OWNER.toString(), true);
-        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_KILLER.toString(), true);
-        config.register(ConfigKey.LOOT_PUBLIC_ACCESS_OTHER_PLAYERS.toString(), true);
-        config.register(ConfigKey.WORLD_GUARD_DETECTION.toString(), false);
-        config.register(ConfigKey.WORLD_GUARD_FLAG_DEFAULT.toString(), false);
-        config.register(ConfigKey.DROP_MODE.toString(), "inventory-then-ground");
-        config.register(ConfigKey.DROP_BLOCK.toString(), "chest");
-        config.register(ConfigKey.ITEM_DURABILITY_LOSS_ON_DEATH.toString(), 0);
-        config.register(ConfigKey.EFFECT_ANIMATION_ENABLED.toString(), true);
-        config.register(ConfigKey.EFFECT_ANIMATION_STYLE.toString(), EffectAnimationStyle.SOUL.id());
-        config.register(ConfigKey.EFFECT_ANIMATION_RADIUS.toString(), 0.8D);
-        config.register(ConfigKey.EFFECT_ANIMATION_SPEED.toString(), 1.1D);
-        config.register(ConfigKey.PICKUP_ANIMATION_ENABLED.toString(), true);
-        config.register(ConfigKey.PICKUP_ANIMATION_PARTICLE.toString(), "TOTEM");
-        config.register(ConfigKey.PICKUP_ANIMATION_COUNT.toString(), 22);
-        config.register(ConfigKey.PICKUP_ANIMATION_OFFSET_X.toString(), 0.45D);
-        config.register(ConfigKey.PICKUP_ANIMATION_OFFSET_Y.toString(), 0.5D);
-        config.register(ConfigKey.PICKUP_ANIMATION_OFFSET_Z.toString(), 0.45D);
-        config.register(ConfigKey.PICKUP_ANIMATION_SPEED.toString(), 0.08D);
-        config.register(ConfigKey.PICKUP_ANIMATION_Y_SHIFT.toString(), 0.55D);
-        config.register(ConfigKey.PICKUP_SOUND_ENABLED.toString(), true);
-        config.register(ConfigKey.PICKUP_SOUND_NAME.toString(), "ENTITY_EXPERIENCE_ORB_PICKUP");
-        config.register(ConfigKey.PICKUP_SOUND_VOLUME.toString(), 1.2D);
-        config.register(ConfigKey.PICKUP_SOUND_PITCH.toString(), 1.0D);
-        config.register(ConfigKey.GENERATE_ON_LAVA.toString(), true);
-        config.register(ConfigKey.GENERATE_ON_WATER.toString(), true);
-        config.register(ConfigKey.GENERATE_ON_RAILS.toString(), true);
-        config.register(ConfigKey.GENERATE_IN_MINECART.toString(), true);
-        config.register(ConfigKey.GENERATE_IN_THE_END.toString(), true);
-        config.register(ConfigKey.EXCLUDED_WORLDS.toString(), Collections.emptyList());
-        config.register(ConfigKey.EXCLUDED_ITEMS.toString(), Collections.emptyList());
-        config.register(ConfigKey.IGNORED_ITEMS.toString(), Collections.emptyList());
-        config.register(ConfigKey.STORE_XP.toString(), false);
-        config.register(ConfigKey.STORE_XP_PERCENTAGE.toString(), 100);
-        config.register(ConfigKey.KEEP_INVENTORY_ON_PVP_DEATH.toString(), false);
-        config.register(ConfigKey.LOCALIZATION_LANGUAGE.toString(), "en");
+        for (ConfigKey key : ConfigKey.values()) {
+            config.register(key);
+        }
     }
 
     private void initializeConfig() {

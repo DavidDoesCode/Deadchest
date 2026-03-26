@@ -1,8 +1,8 @@
 package me.crylonz.deadchest.utils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import me.crylonz.deadchest.Localization;
+
+import java.util.*;
 
 public enum ConfigKey {
     AUTO_UPDATE("updates.auto-check", "auto-update"),
@@ -80,6 +80,200 @@ public enum ConfigKey {
 
     public String[] aliases() {
         return Arrays.copyOf(aliases, aliases.length);
+    }
+
+    public Object defaultValue() {
+        switch (this) {
+            case AUTO_UPDATE:
+            case INDESTRUCTIBLE_CHEST:
+            case ONLY_OWNER_CAN_OPEN_CHEST:
+            case GENERATE_DEADCHEST_IN_CREATIVE:
+            case DISPLAY_POSITION_ON_DEATH:
+            case LOOT_PUBLIC_ACCESS_OWNER:
+            case LOOT_PUBLIC_ACCESS_KILLER:
+            case LOOT_PUBLIC_ACCESS_OTHER_PLAYERS:
+            case GENERATE_ON_LAVA:
+            case GENERATE_ON_WATER:
+            case GENERATE_ON_RAILS:
+            case GENERATE_IN_MINECART:
+            case GENERATE_IN_THE_END:
+            case EFFECT_ANIMATION_ENABLED:
+            case PICKUP_ANIMATION_ENABLED:
+            case PICKUP_SOUND_ENABLED:
+                return true;
+            case LOG_DEADCHEST_ON_CONSOLE:
+            case REQUIRE_PERMISSION_TO_GENERATE:
+            case REQUIRE_PERMISSION_TO_GET_CHEST:
+            case REQUIRE_PERMISSION_TO_LIST_OWN:
+            case AUTO_CLEANUP_ON_START:
+            case ITEMS_DROPPED_AFTER_TIMEOUT:
+            case LOOT_ENABLED:
+            case LOOT_DROP_ITEMS_ON_TIMEOUT:
+            case WORLD_GUARD_DETECTION:
+            case WORLD_GUARD_FLAG_DEFAULT:
+            case STORE_XP:
+            case KEEP_INVENTORY_ON_PVP_DEATH:
+                return false;
+            case DEADCHEST_DURATION:
+            case LOOT_PUBLIC_DURATION:
+                return 300;
+            case MAX_DEAD_CHEST_PER_PLAYER:
+                return 15;
+            case STORE_XP_PERCENTAGE:
+                return 100;
+            case ITEM_DURABILITY_LOSS_ON_DEATH:
+                return 0;
+            case PICKUP_ANIMATION_COUNT:
+                return 22;
+            case EFFECT_ANIMATION_RADIUS:
+                return 0.8D;
+            case EFFECT_ANIMATION_SPEED:
+                return 1.1D;
+            case PICKUP_ANIMATION_OFFSET_X:
+                return 0.45D;
+            case PICKUP_ANIMATION_OFFSET_Y:
+                return 0.5D;
+            case PICKUP_ANIMATION_OFFSET_Z:
+                return 0.45D;
+            case PICKUP_ANIMATION_SPEED:
+                return 0.08D;
+            case PICKUP_ANIMATION_Y_SHIFT:
+                return 0.55D;
+            case PICKUP_SOUND_VOLUME:
+                return 1.2D;
+            case PICKUP_SOUND_PITCH:
+                return 1.0D;
+            case DROP_MODE:
+                return "inventory-then-ground";
+            case DROP_BLOCK:
+                return "chest";
+            case EFFECT_ANIMATION_STYLE:
+                return "ender";
+            case PICKUP_ANIMATION_PARTICLE:
+                return "FIREWORK";
+            case PICKUP_SOUND_NAME:
+                return "ENTITY_PLAYER_LEVELUP";
+            case LOCALIZATION_LANGUAGE:
+                return "en";
+            case EXCLUDED_WORLDS:
+            case EXCLUDED_ITEMS:
+            case IGNORED_ITEMS:
+                return Collections.emptyList();
+            default:
+                throw new IllegalStateException("Unsupported config key: " + this);
+        }
+    }
+
+    public ConfigValueType valueType() {
+        switch (this) {
+            case AUTO_UPDATE:
+            case INDESTRUCTIBLE_CHEST:
+            case ONLY_OWNER_CAN_OPEN_CHEST:
+            case LOG_DEADCHEST_ON_CONSOLE:
+            case REQUIRE_PERMISSION_TO_GENERATE:
+            case REQUIRE_PERMISSION_TO_GET_CHEST:
+            case REQUIRE_PERMISSION_TO_LIST_OWN:
+            case AUTO_CLEANUP_ON_START:
+            case GENERATE_DEADCHEST_IN_CREATIVE:
+            case DISPLAY_POSITION_ON_DEATH:
+            case ITEMS_DROPPED_AFTER_TIMEOUT:
+            case LOOT_ENABLED:
+            case LOOT_DROP_ITEMS_ON_TIMEOUT:
+            case LOOT_PUBLIC_ACCESS_OWNER:
+            case LOOT_PUBLIC_ACCESS_KILLER:
+            case LOOT_PUBLIC_ACCESS_OTHER_PLAYERS:
+            case WORLD_GUARD_DETECTION:
+            case WORLD_GUARD_FLAG_DEFAULT:
+            case GENERATE_ON_LAVA:
+            case GENERATE_ON_WATER:
+            case GENERATE_ON_RAILS:
+            case GENERATE_IN_MINECART:
+            case GENERATE_IN_THE_END:
+            case STORE_XP:
+            case KEEP_INVENTORY_ON_PVP_DEATH:
+            case EFFECT_ANIMATION_ENABLED:
+            case PICKUP_ANIMATION_ENABLED:
+            case PICKUP_SOUND_ENABLED:
+                return ConfigValueType.BOOLEAN;
+            case DEADCHEST_DURATION:
+            case MAX_DEAD_CHEST_PER_PLAYER:
+            case LOOT_PUBLIC_DURATION:
+            case PICKUP_ANIMATION_COUNT:
+            case STORE_XP_PERCENTAGE:
+            case ITEM_DURABILITY_LOSS_ON_DEATH:
+                return ConfigValueType.INTEGER;
+            case EFFECT_ANIMATION_RADIUS:
+            case EFFECT_ANIMATION_SPEED:
+            case PICKUP_ANIMATION_OFFSET_X:
+            case PICKUP_ANIMATION_OFFSET_Y:
+            case PICKUP_ANIMATION_OFFSET_Z:
+            case PICKUP_ANIMATION_SPEED:
+            case PICKUP_ANIMATION_Y_SHIFT:
+            case PICKUP_SOUND_VOLUME:
+            case PICKUP_SOUND_PITCH:
+                return ConfigValueType.DOUBLE;
+            case DROP_MODE:
+            case DROP_BLOCK:
+            case EFFECT_ANIMATION_STYLE:
+            case PICKUP_ANIMATION_PARTICLE:
+            case PICKUP_SOUND_NAME:
+            case LOCALIZATION_LANGUAGE:
+                return ConfigValueType.STRING;
+            case EXCLUDED_WORLDS:
+            case EXCLUDED_ITEMS:
+            case IGNORED_ITEMS:
+                return ConfigValueType.STRING_LIST;
+            default:
+                throw new IllegalStateException("Unsupported config key: " + this);
+        }
+    }
+
+    public List<String> suggestedValues() {
+        switch (this) {
+            case AUTO_UPDATE:
+            case INDESTRUCTIBLE_CHEST:
+            case ONLY_OWNER_CAN_OPEN_CHEST:
+            case LOG_DEADCHEST_ON_CONSOLE:
+            case REQUIRE_PERMISSION_TO_GENERATE:
+            case REQUIRE_PERMISSION_TO_GET_CHEST:
+            case REQUIRE_PERMISSION_TO_LIST_OWN:
+            case AUTO_CLEANUP_ON_START:
+            case GENERATE_DEADCHEST_IN_CREATIVE:
+            case DISPLAY_POSITION_ON_DEATH:
+            case ITEMS_DROPPED_AFTER_TIMEOUT:
+            case LOOT_ENABLED:
+            case LOOT_DROP_ITEMS_ON_TIMEOUT:
+            case LOOT_PUBLIC_ACCESS_OWNER:
+            case LOOT_PUBLIC_ACCESS_KILLER:
+            case LOOT_PUBLIC_ACCESS_OTHER_PLAYERS:
+            case WORLD_GUARD_DETECTION:
+            case WORLD_GUARD_FLAG_DEFAULT:
+            case GENERATE_ON_LAVA:
+            case GENERATE_ON_WATER:
+            case GENERATE_ON_RAILS:
+            case GENERATE_IN_MINECART:
+            case GENERATE_IN_THE_END:
+            case STORE_XP:
+            case KEEP_INVENTORY_ON_PVP_DEATH:
+            case EFFECT_ANIMATION_ENABLED:
+            case PICKUP_ANIMATION_ENABLED:
+            case PICKUP_SOUND_ENABLED:
+                return Arrays.asList("true", "false");
+            case DROP_MODE:
+                return Arrays.asList("inventory-then-ground", "ground-drop");
+            case DROP_BLOCK:
+                return Arrays.asList("chest", "player-head", "barrel", "shulker-box", "ender-chest");
+            case EFFECT_ANIMATION_STYLE:
+                return Arrays.asList("soul", "flame", "ender");
+            case LOCALIZATION_LANGUAGE:
+                return Localization.getBundledLanguages();
+            default:
+                return Collections.emptyList();
+        }
+    }
+
+    public boolean supportsInteractiveEdit() {
+        return this == IGNORED_ITEMS;
     }
 
     public static ConfigKey fromCanonicalPath(String path) {

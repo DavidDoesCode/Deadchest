@@ -60,6 +60,10 @@ public class Localization {
         return copy;
     }
 
+    public static List<String> getBundledLanguages() {
+        return Collections.unmodifiableList(BUNDLED_LANGUAGES);
+    }
+
     public void set(Map<String, Object> local) {
         Map<String, String> normalized = new LinkedHashMap<>();
         if (local != null) {

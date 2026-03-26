@@ -7,6 +7,8 @@ import me.crylonz.deadchest.ChestData;
 import me.crylonz.deadchest.DeadChestLoader;
 import me.crylonz.deadchest.Localization;
 import me.crylonz.deadchest.Permission;
+import me.crylonz.deadchest.utils.ConfigKey;
+import me.crylonz.deadchest.utils.DeadChestConfig;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -33,9 +35,22 @@ public class DCCommandRegistrationServiceTest {
         Map<String, Object> values = new HashMap<>();
         values.put("common.prefix", "[DeadChest] ");
         values.put("commands.error.player-only", "Command must be called by a player");
+        values.put("commands.config.deprecated.ignore", "Ignore command is deprecated");
+        values.put("commands.config.usage", "Config usage");
+        values.put("commands.config.get.success", "{0} = {1}");
+        values.put("commands.config.set.success", "Set {0} = {1}");
+        values.put("commands.config.reset.success", "Reset {0} = {1}");
+        values.put("commands.config.edit.unsupported", "{0} cannot be edited interactively");
+        values.put("commands.config.error.unknown-key", "Unknown config key: {0}");
+        values.put("commands.config.error.invalid-value", "Invalid value for {0}: {1} ({2})");
         localization.set(values);
         DeadChestLoader.local = localization;
         DeadChestLoader.ignoreList = server.createInventory(null, 9);
+        DeadChestLoader.plugin = MockBukkit.createMockPlugin();
+        DeadChestLoader.config = new DeadChestConfig(DeadChestLoader.plugin);
+        for (ConfigKey key : ConfigKey.values()) {
+            DeadChestLoader.config.register(key);
+        }
         service = new DCCommandRegistrationService(mock(DeadChestLoader.class));
     }
 
@@ -67,6 +82,31 @@ public class DCCommandRegistrationServiceTest {
         assertTrue(service.isCommandSucceed());
         assertNotNull(admin.getOpenInventory());
         assertSame(ignoreInventory, admin.getOpenInventory().getTopInventory());
+    }
+
+    @Test
+    public void registerConfigSetUpdatesCanonicalYamlKey() {
+        PlayerMock admin = server.addPlayer("Admin");
+        admin.addAttachment(MockBukkit.createMockPlugin(), Permission.CONFIG.label, true);
+
+        service.register(admin, new String[]{"config", "set", "localization.language", "fr"});
+        service.registerConfigSet();
+
+        assertTrue(service.isCommandSucceed());
+        assertEquals("fr", DeadChestLoader.config.getString(ConfigKey.LOCALIZATION_LANGUAGE));
+        assertEquals("fr", DeadChestLoader.plugin.getConfig().getString(ConfigKey.LOCALIZATION_LANGUAGE.toString()));
+    }
+
+    @Test
+    public void registerConfigEditRejectsNonInteractiveKeys() {
+        PlayerMock admin = server.addPlayer("Admin");
+        admin.addAttachment(MockBukkit.createMockPlugin(), Permission.CONFIG.label, true);
+
+        service.register(admin, new String[]{"config", "edit", "localization.language"});
+        service.registerConfigEdit();
+
+        assertTrue(service.isCommandSucceed());
+        assertNotSame(DeadChestLoader.ignoreList, admin.getOpenInventory().getTopInventory());
     }
 
     @Test

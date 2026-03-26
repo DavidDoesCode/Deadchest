@@ -1,6 +1,7 @@
 package me.crylonz.deadchest.commands;
 
 import me.crylonz.deadchest.Permission;
+import me.crylonz.deadchest.utils.ConfigKey;
 import me.crylonz.deadchest.utils.PermissionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -9,7 +10,10 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class DCTabCompletion implements TabCompleter {
 
@@ -19,61 +23,92 @@ public class DCTabCompletion implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 
         list.clear();
-        if (cmd.getName().equalsIgnoreCase("dc")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-
-                if (args.length == 1) {
-                    if (player.hasPermission(Permission.ADMIN.label)) {
-                        list.add("reload");
-                        list.add("removeinfinite");
-                        list.add("removeall");
-                        list.add("repair");
-                        list.add("ignore");
-                    }
-
-                    if (PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.LIST_ALL)) {
-                        list.add("remove");
-                    }
-
-                    if (PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
-                        list.add("giveBack");
-                    }
-
-                    if (PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.REMOVE_ALL)) {
-                        list.add("list");
-                    }
-                }
-
-                if (args.length == 2) {
-                    if (args[0].equals("remove")) {
-                        if (PermissionUtils.hasAdminOr(player, Permission.REMOVE_OTHER)) {
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                list.add(p.getName());
-                            }
-                        }
-                    }
-                    if (args[0].equals("repair") && player.hasPermission(Permission.ADMIN.label)) {
-                        list.add("force");
-                    }
-                    if (args[0].equals("list")) {
-                        if (PermissionUtils.hasAdminOr(player, Permission.LIST_OTHER)) {
-                            list.add("all");
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                list.add(p.getName());
-                            }
-                        }
-                    }
-                    if (args[0].equals("giveback")) {
-                        if (PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
-                            for (Player p : Bukkit.getOnlinePlayers()) {
-                                list.add(p.getName());
-                            }
-                        }
-                    }
-                }
-            }
+        if (!cmd.getName().equalsIgnoreCase("dc")) {
+            return list;
         }
-        return list;
+
+        Player player = sender instanceof Player ? (Player) sender : null;
+        boolean admin = sender.hasPermission(Permission.ADMIN.label);
+        boolean configAccess = admin || (player != null && player.hasPermission(Permission.CONFIG.label));
+
+        if (args.length == 1) {
+            if (admin) {
+                list.add("reload");
+                list.add("removeinfinite");
+                list.add("removeall");
+                list.add("repair");
+                list.add("ignore");
+                list.add("config");
+            }
+
+            if (player != null && PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.LIST_ALL)) {
+                list.add("remove");
+            }
+
+            if (player != null && PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
+                list.add("giveBack");
+            }
+
+            if (player != null && PermissionUtils.hasAdminOrOneOf(player, PermissionUtils.REMOVE_ALL)) {
+                list.add("list");
+            }
+            return filterSuggestions(args[0]);
+        }
+
+        if (args.length == 2) {
+            if ("remove".equalsIgnoreCase(args[0]) && player != null && PermissionUtils.hasAdminOr(player, Permission.REMOVE_OTHER)) {
+                addOnlinePlayers();
+            }
+            if ("repair".equalsIgnoreCase(args[0]) && admin) {
+                list.add("force");
+            }
+            if ("list".equalsIgnoreCase(args[0]) && player != null && PermissionUtils.hasAdminOr(player, Permission.LIST_OTHER)) {
+                list.add("all");
+                addOnlinePlayers();
+            }
+            if ("giveback".equalsIgnoreCase(args[0]) && player != null && PermissionUtils.hasAdminOr(player, Permission.GIVEBACK)) {
+                addOnlinePlayers();
+            }
+            if ("config".equalsIgnoreCase(args[0]) && configAccess) {
+                list.addAll(DCConfigCommandSupport.actions());
+            }
+            return filterSuggestions(args[1]);
+        }
+
+        if (!"config".equalsIgnoreCase(args[0]) || !configAccess) {
+            return Collections.emptyList();
+        }
+
+        if (args.length == 3) {
+            if (DCConfigCommandSupport.ACTION_EDIT.equalsIgnoreCase(args[1])) {
+                list.addAll(DCConfigCommandSupport.interactiveEditKeys());
+            } else {
+                list.addAll(DCConfigCommandSupport.keys());
+            }
+            return filterSuggestions(args[2]);
+        }
+
+        if (args.length == 4 && DCConfigCommandSupport.ACTION_SET.equalsIgnoreCase(args[1])) {
+            ConfigKey key = DCConfigCommandSupport.resolveKey(args[2]);
+            list.addAll(DCConfigCommandSupport.valueSuggestions(key));
+            return filterSuggestions(args[3]);
+        }
+
+        return Collections.emptyList();
+    }
+
+    private void addOnlinePlayers() {
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            list.add(onlinePlayer.getName());
+        }
+    }
+
+    private List<String> filterSuggestions(String token) {
+        String prefix = token == null ? "" : token.toLowerCase(Locale.ROOT);
+        return list.stream()
+                .filter(entry -> entry.toLowerCase(Locale.ROOT).startsWith(prefix))
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 }

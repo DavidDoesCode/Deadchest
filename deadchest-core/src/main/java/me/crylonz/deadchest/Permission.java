@@ -2,6 +2,7 @@ package me.crylonz.deadchest;
 
 public enum Permission {
     CHESTPASS("deadchest.chestPass"),
+    CONFIG("deadchest.config"),
     GET("deadchest.get"),
     GENERATE("deadchest.generate"),
     GIVEBACK("deadchest.giveback"),

@@ -2,10 +2,16 @@
 
 Make sure you have [installed](installation.md) the plugin before editing the configuration.
 
-You can edit configuration by making change on `config.yml` file on the plugin folder
+You can edit configuration directly in `config.yml` or in game with `/dc config`.
 
 DeadChest now uses a structured `config.yml` (schema version `2`) since `v5.0.0`.
-After any change, run `/dc reload`.
+`/dc config set` and `/dc config reset` apply changes immediately.
+If you edit `config.yml` manually, run `/dc reload`.
+
+Console behavior:
+
+- `/dc config`, `/dc config get`, `/dc config set`, and `/dc config reset` can be executed from the server console.
+- `/dc config edit` is player-only because it opens a GUI.
 
 ### Global
 
@@ -165,17 +171,29 @@ The access-state line reflects both the private/public phase and the configured 
 | `filters.excluded-items`  | list<string> | Example values | Items that are not stored in DeadChest.                               |
 | `filters.ignored-items`   | list<string> | Example values | Items ignored by DeadChest storage; they keep vanilla death behavior. |
 
-`filters.ignored-items` and `/dc ignore` use the same source of truth:
+`/dc config` uses canonical YAML paths, so command usage stays aligned with this file:
+
+- `/dc config get localization.language`
+- `/dc config set chest.duration-seconds 600`
+- `/dc config set filters.excluded-worlds world,world_nether`
+- `/dc config reset visuals.sound.pickup.name`
+- `/dc config edit filters.ignored-items`
+
+`/dc config edit` currently supports only `filters.ignored-items`.
+
+`filters.ignored-items`, `/dc config edit filters.ignored-items`, and deprecated `/dc ignore` use the same source of truth:
 
 - `filters.ignored-items` is the canonical list in `config.yml`.
-- `/dc ignore` edits that same list through a GUI.
+- `/dc config edit filters.ignored-items` edits that same list through a GUI.
+- `/dc ignore` remains as a deprecated compatibility alias.
 - A rule can be either a Bukkit `Material` name or a serialized `ItemStack`.
-- Serialized `ItemStack` rules preserve custom meta and are written automatically by `/dc ignore`.
+- Serialized `ItemStack` rules preserve custom meta and are written automatically by the interactive editor.
 - Ignored items are not saved in a DeadChest and are left to vanilla death handling or other plugins.
 
 ### Permission reference
 
-- `deadchest.admin`: admin commands (`reload`, `repair`, `removeall`, `removeinfinite`, `ignore`)
+- `deadchest.admin`: admin commands and bypass for `/dc config`
+- `deadchest.config`: use `/dc config get|set|reset|edit`
 - `deadchest.generate`: generate chest on death (if required)
 - `deadchest.get`: claim/retrieve chest (if required)
 - `deadchest.list.own`: list own chests (if required)

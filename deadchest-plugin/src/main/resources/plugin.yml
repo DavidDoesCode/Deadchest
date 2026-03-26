@@ -16,6 +16,9 @@ permissions:
   deadchest.chestPass:
     description: Player can open all deadChest
     default: op
+  deadchest.config:
+    description: Allow a player to view and change DeadChest configuration with /dc config
+    default: op
   deadchest.infinityChest:
     description: Player dead chest never disappear
     default: false
@@ -39,5 +42,5 @@ permissions:
     default: op
 commands:
   dc:
-    usage: /dc reload | repair | remove [PlayerName] | removeinfinite | removeall | list [PlayerName] | list all
+    usage: /dc reload | repair | remove [PlayerName] | removeinfinite | removeall | list [PlayerName] | list all | config <get|set|reset|edit>
     description: List of commands

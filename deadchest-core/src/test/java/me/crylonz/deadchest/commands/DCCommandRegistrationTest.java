@@ -69,6 +69,18 @@ class DCCommandRegistrationTest {
         verify(sender, times(1)).sendMessage(contains("Bad argument(s) for /dc remove"));
     }
 
+    @Test
+    void registerCommandDoesNotReportBadArgumentsForDifferentSubcommand() {
+        CommandSender sender = mock(CommandSender.class);
+
+        registration.register(sender, new String[]{"config", "edit", "filters.ignored-items"});
+        registration.registerCommand("dc config set {1} {2}", null, () -> {
+        });
+
+        assertFalse(registration.isCommandSucceed());
+        verify(sender, never()).sendMessage(contains("Bad argument(s) for /dc config"));
+    }
+
     private static final class TestRegistration extends DCCommandRegistration {
         TestRegistration() {
             super(mock(DeadChestLoader.class));

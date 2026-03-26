@@ -64,36 +64,46 @@ abstract class DCCommandRegistration {
     protected boolean checkCommand(String command,
                                    String permission,
                                    Runnable commandRunnable) {
-        if (args.length == 0 || !args[0].equalsIgnoreCase(command.split(" ")[1])) {
+        String[] commandParts = command.split(" ");
+        if (args.length == 0 || !args[0].equalsIgnoreCase(commandParts[1])) {
             return false;
         }
 
-        for (int i = 0; i < 5; ++i) {
-            if (command.contains("{" + i + "}")) {
-                if (args.length > i + 1) {
-                    command = command.replace("{" + i + "}", args[i + 1]);
-                } else {
-                    if (!commandSucceed) {
-                        sender.sendMessage(local.prefixed("commands.error.bad-args", args[0]));
-                        return true;
-                    }
-                }
+        int expectedArgCount = commandParts.length - 1;
+        int providedComparableArgs = Math.min(args.length, expectedArgCount);
+
+        for (int i = 0; i < providedComparableArgs; ++i) {
+            String expectedPart = commandParts[i + 1];
+            if (isPlaceholder(expectedPart)) {
+                continue;
+            }
+            if (!args[i].equalsIgnoreCase(expectedPart)) {
+                return false;
             }
         }
 
-        if (player == null || (permission == null || player.hasPermission(permission))) {
-            String[] commandsPart = command.split(" ");
-            if (args.length == commandsPart.length - 1) {
-                for (int i = 0; i < args.length; ++i) {
-                    if (!args[i].equalsIgnoreCase(commandsPart[i + 1])) {
-                        return false;
-                    }
-                }
-                commandRunnable.run();
+        if (args.length < expectedArgCount) {
+            if (!commandSucceed) {
+                sender.sendMessage(local.prefixed("commands.error.bad-args", args[0]));
                 return true;
             }
+            return false;
         }
-        return false;
+
+        if (args.length != expectedArgCount) {
+            return false;
+        }
+
+        if (player != null && permission != null && !player.hasPermission(permission)) {
+            return false;
+        }
+
+        commandRunnable.run();
+        return true;
+    }
+
+    private boolean isPlaceholder(String token) {
+        return token.startsWith("{") && token.endsWith("}");
     }
 
     public void registerCommand(String command, String permission, Runnable commandRunnable) {

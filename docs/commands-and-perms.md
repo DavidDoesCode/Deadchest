@@ -19,7 +19,12 @@ This page documents the current `/dc` commands and permission nodes.
 | `/dc list <player>`     | `deadchest.list.other`   | List DeadChests for a specific player.                                       |
 | `/dc list all`          | `deadchest.list.other`   | List all DeadChests on the server.                                           |
 | `/dc giveback <player>` | `deadchest.giveback`     | Give back a player's oldest DeadChest inventory.                             |
-| `/dc ignore`            | `deadchest.admin`        | Open the ignore-items GUI/list backed by `filters.ignored-items`.            |
+| `/dc config`            | `deadchest.config`       | Show `/dc config` usage. `deadchest.admin` also bypasses this permission.    |
+| `/dc config get <path>` | `deadchest.config`       | Read a config value using its canonical YAML path.                           |
+| `/dc config set <path> <value>` | `deadchest.config` | Update a config value using its canonical YAML path.                         |
+| `/dc config reset <path>` | `deadchest.config`     | Reset a config value to its default.                                         |
+| `/dc config edit <path>` | `deadchest.config`      | Open an interactive editor for supported paths (`filters.ignored-items` only, player-only). |
+| `/dc ignore`            | `deadchest.admin`        | Deprecated alias for `/dc config edit filters.ignored-items`.                |
 
 \* `deadchest.list.own` is only required when `permissions.require-list-own: true` in `config.yml`.
 
@@ -27,7 +32,8 @@ This page documents the current `/dc` commands and permission nodes.
 
 | Permission                | Description                                                                          |
 |---------------------------|--------------------------------------------------------------------------------------|
-| `deadchest.admin`         | Access admin commands (`reload`, `repair`, `removeall`, `removeinfinite`, `ignore`). |
+| `deadchest.admin`         | Access admin commands and bypass `deadchest.config`.                             |
+| `deadchest.config`        | Access `/dc config get|set|reset|edit`.                                        |
 | `deadchest.generate`      | Generate a DeadChest on death (if required by config).                               |
 | `deadchest.get`           | Claim/retrieve a DeadChest (if required by config).                                  |
 | `deadchest.chestPass`     | Bypass owner-only chest access.                                                      |
@@ -46,10 +52,25 @@ The following config flags control whether some actions require permissions:
 - `permissions.require-claim`: require `deadchest.get` for claiming chests.
 - `permissions.require-list-own`: require `deadchest.list.own` for `/dc list`.
 
-`/dc ignore` edits `filters.ignored-items` from `config.yml` directly:
+`/dc config` uses canonical YAML paths, so command input stays aligned with `config.yml`:
+
+- Example: `/dc config get localization.language`
+- Example: `/dc config set chest.block-type barrel`
+- Example: `/dc config reset visuals.effect-animation.style`
+- Example: `/dc config edit filters.ignored-items`
+
+`/dc ignore` is still available for compatibility, but it is deprecated.
+
+Console behavior:
+
+- `/dc config`, `/dc config get`, `/dc config set`, and `/dc config reset` can be executed from the server console.
+- `/dc config edit` and `/dc ignore` are player-only because they open a GUI.
+
+`/dc config edit filters.ignored-items` and `/dc ignore` edit `filters.ignored-items` from `config.yml` directly:
 
 - `filters.ignored-items` ignores by `Material` name.
-- `/dc ignore` updates the same YAML list through a GUI.
+- `/dc config edit filters.ignored-items` is the only currently supported interactive config editor and updates the same YAML list through a GUI.
+- `/dc ignore` points to that same editor for backward compatibility.
 - Custom items are stored there as serialized `ItemStack` entries, including item meta.
 - Ignored items are skipped by DeadChest storage and keep their default death behavior.
 
