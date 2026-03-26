@@ -1,3 +1,17 @@
+## Deadchest 4.29.0 - 2026-03-26
+
+- Added `/dc config` commands to read and update `config.yml` directly in game:
+  - `/dc config get <path>`
+  - `/dc config set <path> <value>`
+  - `/dc config reset <path>`
+  - `/dc config edit <path>`
+- Added interactive edition for `filters.ignored-items` through `/dc config edit filters.ignored-items`
+- Deprecated `/dc ignore` in favor of `/dc config edit filters.ignored-items`
+- Improved `/dc` tab-completion for config commands and interactive edit paths
+- Updated command and configuration documentation
+
+- Fixed wind charges destroying DeadChests when `chest.indestructible` is set to `false`
+
 ## Deadchest 4.28.0 - 2026-03-21
 
 - Added a two-phase loot system with a private phase (`chest.duration-seconds`) and an optional public loot phase (`chest.loot.*`)
