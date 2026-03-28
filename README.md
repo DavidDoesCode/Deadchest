@@ -5,10 +5,10 @@
 <h2  align="center">
     <img src="https://cf.way2muchnoise.eu/full_322882_downloads.svg" alt="Downloads"/> 
     <a href="https://modrinth.com/plugin/dead-chest"><img src="https://img.shields.io/modrinth/dt/dead-chest?logo=modrinth&label=Modrinth%20downloads" alt="Modrinth Downloads"/></a>
-    <img src="https://img.shields.io/github/last-commit/apavarino/deadchest" alt="commit"/>
-    <a href="https://github.com/apavarino/deadchest/actions/workflows/ci.yml"><img src="https://github.com/apavarino/deadchest/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
+    <img src="https://img.shields.io/github/last-commit/stellionix/Deadchest" alt="commit"/>
+    <a href="https://github.com/stellionix/Deadchest/actions/workflows/ci.yml"><img src="https://github.com/stellionix/Deadchest/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
     <a href="https://stellionix.github.io/Deadchest/"><img src="https://img.shields.io/badge/docs-online-blue" alt="Docs"/></a>
-    <img src="https://img.shields.io/github/license/apavarino/deadchest" alt="License"/>
+    <img src="https://img.shields.io/github/license/stellionix/Deadchest" alt="License"/>
 </h2>
 
 DeadChest keeps a player's inventory in a chest when they die.

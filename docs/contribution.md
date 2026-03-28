@@ -13,7 +13,7 @@ If you want to propose improvements:
    - why it changed
    - any migration/compatibility impact
 
-Repository: [apavarino/Deadchest](https://github.com/apavarino/Deadchest)
+Repository: [stellionix/Deadchest](https://github.com/stellionix/Deadchest)
 
 ### Reporting issues
 
